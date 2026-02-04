@@ -1,0 +1,97 @@
+---
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = '/' } = Astro.props;
+
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/chart', label: 'Chart' },
+  { href: '/predictions', label: 'Predictions' },
+];
+---
+
+<nav class="fixed top-0 left-0 right-0 z-50 bg-[--color-cream]/95 backdrop-blur-sm border-b border-[--color-border]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16 md:h-18">
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-2 group">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[--color-terracotta] to-[--color-golden-hour] flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+          </svg>
+        </div>
+        <span class="font-heading text-xl font-medium text-[--color-espresso] group-hover:text-[--color-terracotta] transition-colors">
+          Sanastro
+        </span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-8">
+        {navLinks.map(link => (
+          <a
+            href={link.href}
+            class:list={[
+              "nav-link text-sm tracking-wide",
+              currentPath === link.href && "active"
+            ]}
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+
+      <!-- CTA Button -->
+      <div class="hidden md:block">
+        <a href="/birth-data" class="btn btn-primary text-sm">
+          Create Horoscope
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button
+        id="mobile-menu-btn"
+        class="md:hidden p-2 rounded-lg hover:bg-[--color-linen] transition-colors"
+        aria-label="Toggle menu"
+      >
+        <svg class="w-6 h-6 text-[--color-espresso]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="hidden md:hidden bg-[--color-cream] border-t border-[--color-border]">
+    <div class="px-4 py-4 space-y-2">
+      {navLinks.map(link => (
+        <a
+          href={link.href}
+          class:list={[
+            "block px-4 py-3 rounded-lg nav-link",
+            currentPath === link.href ? "bg-[--color-linen] text-[--color-accent]" : "hover:bg-[--color-linen]"
+          ]}
+        >
+          {link.label}
+        </a>
+      ))}
+      <div class="pt-2">
+        <a href="/birth-data" class="btn btn-primary w-full text-center">
+          Create Horoscope
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  const menuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  menuBtn?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+  });
+</script>

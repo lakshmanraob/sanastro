@@ -1,0 +1,287 @@
+# KP Astrology Application - Full Stack Development
+
+## Project Overview
+Build a comprehensive, user-friendly KP (Krishnamurti Paddhati) Astrology application that provides accurate horoscope calculations, predictions, and analysis based on the KP system.
+
+## Core Features Required
+
+### 1. Birth Data Input Module
+- **User-friendly form** to collect:
+  - Full name
+  - Date of birth (with calendar picker)
+  - Exact time of birth (hours, minutes, seconds)
+  - Place of birth (with autocomplete using geocoding API)
+  - Latitude, Longitude, Timezone (auto-calculated from place)
+  - Ayanamsa selection (KP Ayanamsa - Krishnamurti, Lahiri, etc.)
+- Input validation with helpful error messages
+- Option to save multiple profiles
+
+### 2. KP Horoscope Chart Generation
+- **Bhava Chalit Chart** (House-based chart - primary in KP)
+- **Rasi Chart** (Sign-based chart)
+- **Nirayana positions** of all planets
+- Visual chart display options:
+  - South Indian style
+  - North Indian style
+  - Western circular style
+- Interactive charts with hover/click details
+
+### 3. Cusp Table (Most Important in KP)
+- Calculate and display all **12 house cusps** using Placidus house system
+- For each cusp show:
+  - Cusp degree (sign, degrees, minutes, seconds)
+  - Cusp Sign Lord
+  - Cusp Star Lord (Nakshatra Lord)
+  - Cusp Sub Lord
+  - Cusp Sub-Sub Lord (optional advanced)
+- Color-coded for easy reading
+- Export cusp table as PDF/image
+
+### 4. Planet Position Table
+- For each of the **9 planets** (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu):
+  - Longitude (degrees, minutes, seconds)
+  - Rasi (Zodiac Sign)
+  - Nakshatra (Star) - 27 Nakshatras with pada
+  - Nakshatra Lord (Star Lord)
+  - Sub Lord
+  - Sub-Sub Lord
+  - Planet's house position (Bhava)
+  - Retrograde status (R) indicator
+- Include Ascendant (Lagna) and Midheaven (MC)
+
+### 5. Significators Module (Heart of KP Predictions)
+For each planet, calculate and display:
+
+#### A. House Significations (4-fold significators)
+1. **Planet in Star of occupant** of houses
+2. **Occupant** of houses
+3. **Planet in Star of owner** of houses  
+4. **Owner** of houses
+
+#### B. Ruling Planets (for timing events)
+Calculate current ruling planets at the moment:
+- Day Lord
+- Moon Sign Lord
+- Moon Star Lord
+- Moon Sub Lord
+- Ascendant Sign Lord
+- Ascendant Star Lord
+- Ascendant Sub Lord
+
+#### C. Significator Strength Table
+- Show which planets signify which houses (1-12)
+- Highlight strong significators
+- Group planets by house signification
+
+### 6. Dasha System (Vimshottari Dasha)
+- **Mahadasha** periods with start/end dates
+- **Antardasha** (Bhukti) periods
+- **Pratyantardasha** periods
+- **Sookshma Dasha** (optional)
+- Current running dasha highlighted
+- Dasha balance at birth calculation
+- Visual timeline representation
+
+### 7. Prediction Modules
+
+#### A. House-wise Predictions
+For each house (1-12), show:
+- Matters governed by the house
+- Cusp sub lord and its significations
+- Favorable/unfavorable indications
+- Timing possibilities based on significators
+
+#### B. Specific Prediction Areas:
+- **Marriage/Relationship** (Houses 2, 7, 11)
+- **Career/Profession** (Houses 2, 6, 10)
+- **Finance/Wealth** (Houses 2, 6, 11)
+- **Health** (Houses 1, 6, 8, 12)
+- **Education** (Houses 4, 9, 11)
+- **Children** (Houses 2, 5, 11)
+- **Foreign Travel/Settlement** (Houses 3, 9, 12)
+- **Property/Vehicle** (Houses 4, 11)
+- **Legal Matters** (Houses 6, 9, 12)
+
+#### C. Prediction Logic Display
+- Show WHY a prediction is made
+- Display the significator chain
+- Show supporting and negating factors
+- Confidence level indicator
+
+### 8. KP Number Horoscopy (Horary)
+- Input: KP Number (1-249)
+- Generate horoscope for the moment
+- Useful for specific questions
+- Show methodology and interpretation
+
+### 9. Transit Analysis
+- Current planetary transits
+- Transit planets' star lords and sub lords
+- Transit effects on natal chart
+- Favorable/unfavorable transit periods
+
+### 10. Compatibility Analysis (Matching)
+- Compare two horoscopes
+- KP-based compatibility factors
+- Significator matching
+- Dasha compatibility
+
+## Technical Requirements
+
+### Frontend
+- **Framework**: React.js / Next.js / Vue.js
+- **UI Library**: Tailwind CSS + shadcn/ui or Material UI
+- **Charts**: D3.js or Chart.js for astrological charts
+- **State Management**: Redux / Zustand / Context API
+- **Responsive Design**: Mobile-first approach
+- **Dark/Light mode** toggle
+- **Multi-language support** (English, Hindi, Tamil, etc.)
+
+### Backend
+- **Framework**: Node.js (Express) / Python (FastAPI/Django)
+- **Astronomical Calculations**: Swiss Ephemeris library
+  - For Node.js: `swisseph` npm package
+  - For Python: `pyswisseph` or `flatlib`
+- **Database**: PostgreSQL / MongoDB for user data
+- **Authentication**: JWT-based auth
+- **API**: RESTful or GraphQL
+
+### Key Calculation Libraries/Formulas
+- **Ayanamsa**: KP Ayanamsa (Krishnamurti) - 23Â°51'17" as of 1900 with precession
+- **House System**: Placidus (mandatory for KP)
+- **Nakshatra Division**: 27 Nakshatras, 13Â°20' each
+- **Sub Division**: Each Nakshatra divided into 9 subs (Vimshottari proportions)
+- **Sub-Sub**: Further division for precision
+
+### Sub Lord Calculation Logic
+
+Each Nakshatra (13Â°20') is divided into 9 subs based on Vimshottari Dasha proportions:
+
+Ketu: 7 years â†’ 0Â°46'40"
+Venus: 20 years â†’ 2Â°13'20"
+Sun: 6 years â†’ 0Â°40'00"
+Moon: 10 years â†’ 1Â°06'40"
+Mars: 7 years â†’ 0Â°46'40"
+Rahu: 18 years â†’ 2Â°00'00"
+Jupiter: 16 years â†’ 1Â°46'40"
+Saturn: 19 years â†’ 2Â°06'40"
+Mercury: 17 years â†’ 1Â°53'20" Total: 120 years â†’ 13Â°20'
+
+
+## UI/UX Design Guidelines
+
+### Dashboard
+- Clean, modern interface
+- Summary cards showing key information
+- Quick access to all modules
+- Recent horoscopes/searches
+
+### Color Scheme
+- Use astrologically meaningful colors
+- Benefic planets: Green/Blue shades
+- Malefic planets: Red/Orange shades
+- Neutral: Purple/Yellow
+- High contrast for readability
+
+### Interactive Elements
+- Clickable planets/houses for details
+- Tooltips explaining KP concepts
+- Expandable sections for detailed analysis
+- Progress indicators for calculations
+
+### Accessibility
+- Screen reader compatible
+- Keyboard navigation
+- Adjustable font sizes
+- High contrast mode
+
+## Data Models
+
+### User Schema
+```json
+{
+  "userId": "string",
+  "email": "string",
+  "name": "string",
+  "savedHoroscopes": ["horoscopeId"],
+  "preferences": {
+    "ayanamsa": "KP",
+    "chartStyle": "south_indian",
+    "language": "en"
+  }
+}
+
+{
+  "horoscopeId": "string",
+  "name": "string",
+  "birthData": {
+    "date": "YYYY-MM-DD",
+    "time": "HH:MM:SS",
+    "place": "string",
+    "latitude": "number",
+    "longitude": "number",
+    "timezone": "number"
+  },
+  "cusps": [
+    {
+      "house": 1,
+      "degree": "number",
+      "sign": "string",
+      "signLord": "string",
+      "starLord": "string",
+      "subLord": "string"
+    }
+  ],
+  "planets": [
+    {
+      "name": "string",
+      "longitude": "number",
+      "sign": "string",
+      "house": "number",
+      "nakshatra": "string",
+      "nakshatraLord": "string",
+      "subLord": "string",
+      "retrograde": "boolean"
+    }
+  ],
+  "significators": {},
+  "dashas": []
+}
+
+Sample Screens to Build
+Home/Landing Page - App introduction, login/signup
+Dashboard - User's saved horoscopes, quick actions
+Birth Data Entry - Form with validation
+Chart View - Visual horoscope with all charts
+Cusp Analysis - Detailed cusp table with interpretations
+Planet Details - Comprehensive planet information
+Significators View - House-wise significator breakdown
+Dasha Timeline - Visual dasha periods
+Predictions - Category-wise predictions with reasoning
+Settings - User preferences, ayanamsa selection
+Error Handling
+Validate birth time (show warning for rounded times)
+Handle timezone edge cases
+Graceful fallback for calculation errors
+Helpful messages for invalid inputs
+Performance
+Cache ephemeris data
+Lazy load prediction modules
+Optimize chart rendering
+Progressive loading for large calculations
+Future Enhancements (Phase 2)
+PDF report generation
+Comparison with multiple charts
+AI-powered interpretation assistance
+Community forums
+Astrologer consultation booking
+Push notifications for transit alerts
+Yearly predictions
+Muhurta (auspicious timing) module
+References for KP Astrology Rules
+KP Reader 1-6 by K.S. Krishnamurti
+Significator determination rules
+Sub lord theory
+Ruling planets methodology
+Cuspal interlinks
+Build this application with clean, modular code that's easy to maintain and extend. Focus on accuracy of calculations first, then enhance the UI/UX. Every prediction should show the astrological reasoning behind it for educational value.

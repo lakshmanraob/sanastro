@@ -1,0 +1,39 @@
+{
+  "name": "sanastro",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "KP Astrology Application - Accurate horoscope calculations and predictions based on the Krishnamurti Paddhati system",
+  "author": "Lakshman",
+  "license": "MIT",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.4.2",
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/react": "^19.2.11",
+    "@types/react-dom": "^19.2.3",
+    "astro": "^5.17.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwindcss": "^4.1.18"
+  },
+  "keywords": [
+    "astrology",
+    "kp-astrology",
+    "krishnamurti-paddhati",
+    "horoscope",
+    "vedic-astrology",
+    "birth-chart"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/sanastro.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

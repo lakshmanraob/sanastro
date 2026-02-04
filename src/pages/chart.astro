@@ -1,0 +1,432 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+
+// Sample data for demonstration
+const sampleCusps = [
+  { house: 1, degree: '15°23\'45"', sign: 'Aries', signLord: 'Mars', starLord: 'Venus', subLord: 'Saturn' },
+  { house: 2, degree: '12°45\'12"', sign: 'Taurus', signLord: 'Venus', starLord: 'Moon', subLord: 'Mercury' },
+  { house: 3, degree: '08°12\'30"', sign: 'Gemini', signLord: 'Mercury', starLord: 'Mars', subLord: 'Venus' },
+  { house: 4, degree: '05°34\'18"', sign: 'Cancer', signLord: 'Moon', starLord: 'Saturn', subLord: 'Moon' },
+  { house: 5, degree: '06°45\'22"', sign: 'Leo', signLord: 'Sun', starLord: 'Ketu', subLord: 'Sun' },
+  { house: 6, degree: '10°23\'45"', sign: 'Virgo', signLord: 'Mercury', starLord: 'Moon', subLord: 'Mars' },
+  { house: 7, degree: '15°23\'45"', sign: 'Libra', signLord: 'Venus', starLord: 'Rahu', subLord: 'Jupiter' },
+  { house: 8, degree: '12°45\'12"', sign: 'Scorpio', signLord: 'Mars', starLord: 'Saturn', subLord: 'Mercury' },
+  { house: 9, degree: '08°12\'30"', sign: 'Sagittarius', signLord: 'Jupiter', starLord: 'Ketu', subLord: 'Venus' },
+  { house: 10, degree: '05°34\'18"', sign: 'Capricorn', signLord: 'Saturn', starLord: 'Sun', subLord: 'Moon' },
+  { house: 11, degree: '06°45\'22"', sign: 'Aquarius', signLord: 'Saturn', starLord: 'Mars', subLord: 'Rahu' },
+  { house: 12, degree: '10°23\'45"', sign: 'Pisces', signLord: 'Jupiter', starLord: 'Mercury', subLord: 'Saturn' },
+];
+
+const samplePlanets = [
+  { name: 'Sun', symbol: '☉', longitude: '285°23\'45"', sign: 'Capricorn', nakshatra: 'Uttarashada', nakshatraLord: 'Sun', subLord: 'Venus', house: 10, retrograde: false },
+  { name: 'Moon', symbol: '☽', longitude: '125°12\'30"', sign: 'Leo', nakshatra: 'Magha', nakshatraLord: 'Ketu', subLord: 'Mars', house: 5, retrograde: false },
+  { name: 'Mars', symbol: '♂', longitude: '45°34\'18"', sign: 'Taurus', nakshatra: 'Rohini', nakshatraLord: 'Moon', subLord: 'Jupiter', house: 2, retrograde: false },
+  { name: 'Mercury', symbol: '☿', longitude: '275°45\'22"', sign: 'Capricorn', nakshatra: 'Shravana', nakshatraLord: 'Moon', subLord: 'Saturn', house: 10, retrograde: true },
+  { name: 'Jupiter', symbol: '♃', longitude: '320°12\'15"', sign: 'Aquarius', nakshatra: 'Dhanishta', nakshatraLord: 'Mars', subLord: 'Rahu', house: 11, retrograde: false },
+  { name: 'Venus', symbol: '♀', longitude: '310°34\'28"', sign: 'Aquarius', nakshatra: 'Shatabhisha', nakshatraLord: 'Rahu', subLord: 'Mercury', house: 11, retrograde: false },
+  { name: 'Saturn', symbol: '♄', longitude: '185°23\'45"', sign: 'Libra', nakshatra: 'Swati', nakshatraLord: 'Rahu', subLord: 'Venus', house: 7, retrograde: true },
+  { name: 'Rahu', symbol: '☊', longitude: '95°45\'12"', sign: 'Cancer', nakshatra: 'Pushya', nakshatraLord: 'Saturn', subLord: 'Moon', house: 4, retrograde: true },
+  { name: 'Ketu', symbol: '☋', longitude: '275°45\'12"', sign: 'Capricorn', nakshatra: 'Uttarashada', nakshatraLord: 'Sun', subLord: 'Mercury', house: 10, retrograde: true },
+];
+
+const tabs = [
+  { id: 'chart', label: 'Birth Chart' },
+  { id: 'cusps', label: 'Cusp Table' },
+  { id: 'planets', label: 'Planet Table' },
+  { id: 'significators', label: 'Significators' },
+];
+---
+
+<Layout title="Birth Chart">
+  <Navigation currentPath="/chart" />
+
+  <main class="pt-20 min-h-screen bg-[--color-cream]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 class="font-heading text-3xl text-[--color-espresso]" id="chart-name">Birth Chart Analysis</h1>
+            <p class="text-[--color-text-secondary] mt-1" id="chart-details">
+              Loading birth details...
+            </p>
+          </div>
+          <div class="flex gap-3">
+            <button class="btn btn-ghost text-sm">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Export PDF
+            </button>
+            <button class="btn btn-secondary text-sm">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              Share
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="border-b border-[--color-border] mb-8">
+        <nav class="flex gap-8 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              class="tab-btn py-4 px-1 text-sm font-medium border-b-2 border-transparent text-[--color-text-secondary] hover:text-[--color-espresso] whitespace-nowrap transition-colors"
+              data-tab={tab.id}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content" id="tab-chart">
+        <div class="grid lg:grid-cols-2 gap-8">
+          <!-- South Indian Chart -->
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-heading text-xl text-[--color-espresso]">South Indian Chart</h2>
+              <div class="flex gap-2">
+                <button class="chart-style-btn active px-3 py-1 text-xs rounded-full bg-[--color-terracotta] text-white" data-style="south">South</button>
+                <button class="chart-style-btn px-3 py-1 text-xs rounded-full bg-[--color-linen] text-[--color-text-secondary]" data-style="north">North</button>
+              </div>
+            </div>
+            <div class="aspect-square relative bg-[--color-pearl] rounded-lg p-4">
+              <svg viewBox="0 0 400 400" class="w-full h-full" id="birth-chart">
+                <!-- South Indian Chart Structure -->
+                <rect x="10" y="10" width="380" height="380" fill="none" stroke="var(--color-border)" stroke-width="2" />
+                <!-- Horizontal lines -->
+                <line x1="10" y1="105" x2="390" y2="105" stroke="var(--color-border)" stroke-width="1" />
+                <line x1="10" y1="200" x2="390" y2="200" stroke="var(--color-border)" stroke-width="1" />
+                <line x1="10" y1="295" x2="390" y2="295" stroke="var(--color-border)" stroke-width="1" />
+                <!-- Vertical lines -->
+                <line x1="105" y1="10" x2="105" y2="390" stroke="var(--color-border)" stroke-width="1" />
+                <line x1="200" y1="10" x2="200" y2="390" stroke="var(--color-border)" stroke-width="1" />
+                <line x1="295" y1="10" x2="295" y2="390" stroke="var(--color-border)" stroke-width="1" />
+
+                <!-- House numbers and signs -->
+                <!-- Row 1 -->
+                <text x="57" y="30" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Pisces</text>
+                <text x="57" y="55" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">12</text>
+                <text x="152" y="30" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Aries</text>
+                <text x="152" y="55" text-anchor="middle" class="text-lg fill-[--color-terracotta] font-heading font-bold">1</text>
+                <text x="247" y="30" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Taurus</text>
+                <text x="247" y="55" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">2</text>
+                <text x="342" y="30" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Gemini</text>
+                <text x="342" y="55" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">3</text>
+
+                <!-- Row 2 -->
+                <text x="57" y="125" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Aquarius</text>
+                <text x="57" y="150" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">11</text>
+                <text x="342" y="125" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Cancer</text>
+                <text x="342" y="150" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">4</text>
+
+                <!-- Row 3 -->
+                <text x="57" y="220" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Capricorn</text>
+                <text x="57" y="245" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">10</text>
+                <text x="342" y="220" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Leo</text>
+                <text x="342" y="245" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">5</text>
+
+                <!-- Row 4 -->
+                <text x="57" y="315" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Sagittarius</text>
+                <text x="57" y="340" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">9</text>
+                <text x="152" y="315" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Scorpio</text>
+                <text x="152" y="340" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">8</text>
+                <text x="247" y="315" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Libra</text>
+                <text x="247" y="340" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">7</text>
+                <text x="342" y="315" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Virgo</text>
+                <text x="342" y="340" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">6</text>
+
+                <!-- Sample planet placements -->
+                <text x="152" y="80" text-anchor="middle" class="text-xs fill-[--color-malefic] font-semibold">Ma</text>
+                <text x="57" y="175" text-anchor="middle" class="text-xs fill-[--color-benefic] font-semibold">Ju Ve</text>
+                <text x="57" y="270" text-anchor="middle" class="text-xs fill-[--color-golden-hour] font-semibold">Su Me(R) Ke</text>
+                <text x="247" y="365" text-anchor="middle" class="text-xs fill-[--color-neutral] font-semibold">Sa(R)</text>
+                <text x="342" y="175" text-anchor="middle" class="text-xs fill-[--color-celestial-blue] font-semibold">Ra</text>
+                <text x="342" y="270" text-anchor="middle" class="text-xs fill-[--color-dusty-rose] font-semibold">Mo</text>
+              </svg>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-4 justify-center text-xs">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[--color-benefic]"></span> Benefic</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[--color-malefic]"></span> Malefic</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[--color-neutral]"></span> Neutral</span>
+              <span class="text-[--color-text-muted]">(R) = Retrograde</span>
+            </div>
+          </div>
+
+          <!-- Quick Info -->
+          <div class="space-y-6">
+            <!-- Birth Details Card -->
+            <div class="card p-6">
+              <h3 class="font-heading text-lg text-[--color-espresso] mb-4">Birth Details</h3>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p class="text-[--color-text-muted]">Date</p>
+                  <p class="font-medium text-[--color-espresso]" id="birth-date">January 15, 1990</p>
+                </div>
+                <div>
+                  <p class="text-[--color-text-muted]">Time</p>
+                  <p class="font-medium text-[--color-espresso]" id="birth-time">10:30:00 AM</p>
+                </div>
+                <div>
+                  <p class="text-[--color-text-muted]">Place</p>
+                  <p class="font-medium text-[--color-espresso]" id="birth-place">Chennai, India</p>
+                </div>
+                <div>
+                  <p class="text-[--color-text-muted]">Coordinates</p>
+                  <p class="font-medium text-[--color-espresso]" id="birth-coords">13.08°N, 80.27°E</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ascendant Info -->
+            <div class="card p-6">
+              <h3 class="font-heading text-lg text-[--color-espresso] mb-4">Ascendant (Lagna)</h3>
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[--color-terracotta] to-[--color-golden-hour] flex items-center justify-center">
+                  <span class="text-2xl text-white">♈</span>
+                </div>
+                <div>
+                  <p class="text-2xl font-heading font-medium text-[--color-espresso]">Aries</p>
+                  <p class="text-sm text-[--color-text-secondary]">15°23'45"</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-3 gap-4 text-sm border-t border-[--color-border] pt-4">
+                <div class="text-center">
+                  <p class="text-[--color-text-muted]">Sign Lord</p>
+                  <p class="font-medium text-[--color-espresso]">Mars</p>
+                </div>
+                <div class="text-center">
+                  <p class="text-[--color-text-muted]">Star Lord</p>
+                  <p class="font-medium text-[--color-espresso]">Venus</p>
+                </div>
+                <div class="text-center">
+                  <p class="text-[--color-text-muted]">Sub Lord</p>
+                  <p class="font-medium text-[--color-espresso]">Saturn</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Moon Position -->
+            <div class="card p-6">
+              <h3 class="font-heading text-lg text-[--color-espresso] mb-4">Moon Position</h3>
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[--color-celestial-blue] to-[--color-dusty-rose] flex items-center justify-center">
+                  <span class="text-2xl text-white">☽</span>
+                </div>
+                <div>
+                  <p class="text-2xl font-heading font-medium text-[--color-espresso]">Leo</p>
+                  <p class="text-sm text-[--color-text-secondary]">Magha Nakshatra - Pada 2</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-3 gap-4 text-sm border-t border-[--color-border] pt-4">
+                <div class="text-center">
+                  <p class="text-[--color-text-muted]">Sign Lord</p>
+                  <p class="font-medium text-[--color-espresso]">Sun</p>
+                </div>
+                <div class="text-center">
+                  <p class="text-[--color-text-muted]">Star Lord</p>
+                  <p class="font-medium text-[--color-espresso]">Ketu</p>
+                </div>
+                <div class="text-center">
+                  <p class="text-[--color-text-muted]">Sub Lord</p>
+                  <p class="font-medium text-[--color-espresso]">Mars</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cusp Table Tab -->
+      <div class="tab-content hidden" id="tab-cusps">
+        <div class="card overflow-hidden">
+          <div class="p-6 border-b border-[--color-border]">
+            <h2 class="font-heading text-xl text-[--color-espresso]">Cusp Table (Bhava Cusps)</h2>
+            <p class="text-sm text-[--color-text-secondary] mt-1">House cusps calculated using Placidus system with KP Ayanamsa</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-[--color-linen]">
+                <tr>
+                  <th class="px-6 py-4 text-left font-medium text-[--color-espresso]">House</th>
+                  <th class="px-6 py-4 text-left font-medium text-[--color-espresso]">Degree</th>
+                  <th class="px-6 py-4 text-left font-medium text-[--color-espresso]">Sign</th>
+                  <th class="px-6 py-4 text-left font-medium text-[--color-espresso]">Sign Lord</th>
+                  <th class="px-6 py-4 text-left font-medium text-[--color-espresso]">Star Lord</th>
+                  <th class="px-6 py-4 text-left font-medium text-[--color-espresso]">Sub Lord</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[--color-border]">
+                {sampleCusps.map((cusp, index) => (
+                  <tr class={index % 2 === 0 ? 'bg-white' : 'bg-[--color-pearl]'}>
+                    <td class="px-6 py-4">
+                      <span class={`house-badge ${cusp.house === 1 ? 'bg-[--color-terracotta] text-white' : ''}`}>
+                        {cusp.house}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 font-mono text-[--color-espresso]">{cusp.degree}</td>
+                    <td class="px-6 py-4 text-[--color-espresso]">{cusp.sign}</td>
+                    <td class="px-6 py-4 text-[--color-terracotta] font-medium">{cusp.signLord}</td>
+                    <td class="px-6 py-4 text-[--color-celestial-blue] font-medium">{cusp.starLord}</td>
+                    <td class="px-6 py-4 text-[--color-neutral] font-medium">{cusp.subLord}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Planet Table Tab -->
+      <div class="tab-content hidden" id="tab-planets">
+        <div class="card overflow-hidden">
+          <div class="p-6 border-b border-[--color-border]">
+            <h2 class="font-heading text-xl text-[--color-espresso]">Planet Positions</h2>
+            <p class="text-sm text-[--color-text-secondary] mt-1">Nirayana (sidereal) positions of all planets</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-[--color-linen]">
+                <tr>
+                  <th class="px-4 py-4 text-left font-medium text-[--color-espresso]">Planet</th>
+                  <th class="px-4 py-4 text-left font-medium text-[--color-espresso]">Longitude</th>
+                  <th class="px-4 py-4 text-left font-medium text-[--color-espresso]">Sign</th>
+                  <th class="px-4 py-4 text-left font-medium text-[--color-espresso]">Nakshatra</th>
+                  <th class="px-4 py-4 text-left font-medium text-[--color-espresso]">Star Lord</th>
+                  <th class="px-4 py-4 text-left font-medium text-[--color-espresso]">Sub Lord</th>
+                  <th class="px-4 py-4 text-left font-medium text-[--color-espresso]">House</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[--color-border]">
+                {samplePlanets.map((planet, index) => (
+                  <tr class={index % 2 === 0 ? 'bg-white' : 'bg-[--color-pearl]'}>
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-2">
+                        <span class="text-lg">{planet.symbol}</span>
+                        <span class="font-medium text-[--color-espresso]">
+                          {planet.name}
+                          {planet.retrograde && <span class="text-[--color-malefic] text-xs ml-1">(R)</span>}
+                        </span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4 font-mono text-[--color-espresso]">{planet.longitude}</td>
+                    <td class="px-4 py-4 text-[--color-espresso]">{planet.sign}</td>
+                    <td class="px-4 py-4 text-[--color-text-secondary]">{planet.nakshatra}</td>
+                    <td class="px-4 py-4 text-[--color-celestial-blue] font-medium">{planet.nakshatraLord}</td>
+                    <td class="px-4 py-4 text-[--color-neutral] font-medium">{planet.subLord}</td>
+                    <td class="px-4 py-4">
+                      <span class="house-badge">{planet.house}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Significators Tab -->
+      <div class="tab-content hidden" id="tab-significators">
+        <div class="grid lg:grid-cols-2 gap-8">
+          <div class="card p-6">
+            <h2 class="font-heading text-xl text-[--color-espresso] mb-6">Planet Significations</h2>
+            <p class="text-sm text-[--color-text-secondary] mb-4">
+              Each planet signifies certain houses based on the 4-fold significator system in KP.
+            </p>
+            <div class="space-y-4">
+              {samplePlanets.slice(0, 7).map((planet) => (
+                <div class="p-4 rounded-lg bg-[--color-linen]/50">
+                  <div class="flex items-center gap-3 mb-2">
+                    <span class="text-xl">{planet.symbol}</span>
+                    <span class="font-medium text-[--color-espresso]">{planet.name}</span>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <span class="text-xs px-2 py-1 rounded-full bg-[--color-terracotta]/10 text-[--color-terracotta]">
+                      Owns: {Math.floor(Math.random() * 12) + 1}, {Math.floor(Math.random() * 12) + 1}
+                    </span>
+                    <span class="text-xs px-2 py-1 rounded-full bg-[--color-celestial-blue]/10 text-[--color-celestial-blue]">
+                      Occupies: {planet.house}
+                    </span>
+                    <span class="text-xs px-2 py-1 rounded-full bg-[--color-sage]/20 text-[--color-benefic]">
+                      Star of: {Math.floor(Math.random() * 12) + 1}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="card p-6">
+            <h2 class="font-heading text-xl text-[--color-espresso] mb-6">House Significators</h2>
+            <p class="text-sm text-[--color-text-secondary] mb-4">
+              Planets that signify each house, ordered by strength.
+            </p>
+            <div class="space-y-3">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((house) => (
+                <div class="flex items-center gap-4 p-3 rounded-lg hover:bg-[--color-linen]/50 transition-colors">
+                  <span class={`house-badge ${house === 1 ? 'bg-[--color-terracotta] text-white' : ''}`}>
+                    {house}
+                  </span>
+                  <div class="flex flex-wrap gap-1.5">
+                    {['Su', 'Mo', 'Ma', 'Me', 'Ju', 'Ve', 'Sa'].slice(0, Math.floor(Math.random() * 4) + 2).map((p) => (
+                      <span class="text-xs px-2 py-0.5 rounded bg-[--color-linen] text-[--color-espresso]">{p}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  // Tab switching
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.getAttribute('data-tab');
+
+      // Update button states
+      tabBtns.forEach((b) => {
+        b.classList.remove('border-[--color-terracotta]', 'text-[--color-terracotta]');
+        b.classList.add('border-transparent', 'text-[--color-text-secondary]');
+      });
+      btn.classList.remove('border-transparent', 'text-[--color-text-secondary]');
+      btn.classList.add('border-[--color-terracotta]', 'text-[--color-terracotta]');
+
+      // Show/hide content
+      tabContents.forEach((content) => {
+        content.classList.add('hidden');
+      });
+      document.getElementById(`tab-${tabId}`)?.classList.remove('hidden');
+    });
+  });
+
+  // Set first tab as active
+  tabBtns[0]?.classList.remove('border-transparent', 'text-[--color-text-secondary]');
+  tabBtns[0]?.classList.add('border-[--color-terracotta]', 'text-[--color-terracotta]');
+
+  // Load birth data from localStorage
+  const birthData = JSON.parse(localStorage.getItem('birthData') || '{}');
+  if (birthData.name) {
+    document.getElementById('chart-name')!.textContent = `${birthData.name}'s Birth Chart`;
+    document.getElementById('chart-details')!.textContent = `Born on ${birthData.birthDate} at ${birthData.birthHour}:${birthData.birthMinute}`;
+    document.getElementById('birth-date')!.textContent = birthData.birthDate || 'Not specified';
+    document.getElementById('birth-time')!.textContent = `${birthData.birthHour || '00'}:${birthData.birthMinute || '00'}:${birthData.birthSecond || '00'}`;
+    document.getElementById('birth-place')!.textContent = birthData.birthPlace || 'Not specified';
+    document.getElementById('birth-coords')!.textContent = `${birthData.latitude || '0'}°, ${birthData.longitude || '0'}°`;
+  }
+</script>
