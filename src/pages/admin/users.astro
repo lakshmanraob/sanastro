@@ -1,0 +1,388 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import Footer from '../../components/Footer.astro';
+import { createServerSupabaseClient } from '../../lib/supabase/server';
+
+const { isAdmin } = Astro.locals;
+
+if (!isAdmin) {
+  return Astro.redirect('/dashboard');
+}
+
+const supabase = createServerSupabaseClient(Astro.cookies);
+
+// Get filter from URL
+const filter = Astro.url.searchParams.get('filter') || 'all';
+
+// Build query
+let query = supabase
+  .from('user_logins')
+  .select('*')
+  .order('created_at', { ascending: false });
+
+if (filter !== 'all') {
+  query = query.eq('approval_status', filter);
+}
+
+const { data: users, error } = await query;
+
+// Get counts for tabs
+const { count: allCount } = await supabase
+  .from('user_logins')
+  .select('*', { count: 'exact', head: true });
+
+const { count: pendingCount } = await supabase
+  .from('user_logins')
+  .select('*', { count: 'exact', head: true })
+  .eq('approval_status', 'pending');
+
+const { count: approvedCount } = await supabase
+  .from('user_logins')
+  .select('*', { count: 'exact', head: true })
+  .eq('approval_status', 'approved');
+
+const { count: rejectedCount } = await supabase
+  .from('user_logins')
+  .select('*', { count: 'exact', head: true })
+  .eq('approval_status', 'rejected');
+---
+
+<Layout title="User Management">
+  <Navigation currentPath="/admin" />
+
+  <main class="pt-20 min-h-screen bg-[--color-cream]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <a href="/admin" class="text-[--color-text-muted] hover:text-[--color-accent]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </a>
+            <h1 class="font-heading text-3xl md:text-4xl text-[--color-espresso]">
+              User Management
+            </h1>
+          </div>
+          <p class="text-[--color-text-muted]">
+            Approve or reject user registrations
+          </p>
+        </div>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <a
+          href="/admin/users?filter=all"
+          class:list={[
+            "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+            filter === 'all'
+              ? "bg-[--color-terracotta] text-white"
+              : "bg-[--color-linen] text-[--color-cocoa] hover:bg-[--color-warm-sand]"
+          ]}
+        >
+          All ({allCount || 0})
+        </a>
+        <a
+          href="/admin/users?filter=pending"
+          class:list={[
+            "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+            filter === 'pending'
+              ? "bg-[--color-golden-hour] text-white"
+              : "bg-[--color-linen] text-[--color-cocoa] hover:bg-[--color-warm-sand]"
+          ]}
+        >
+          Pending ({pendingCount || 0})
+        </a>
+        <a
+          href="/admin/users?filter=approved"
+          class:list={[
+            "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+            filter === 'approved'
+              ? "bg-[--color-benefic] text-white"
+              : "bg-[--color-linen] text-[--color-cocoa] hover:bg-[--color-warm-sand]"
+          ]}
+        >
+          Approved ({approvedCount || 0})
+        </a>
+        <a
+          href="/admin/users?filter=rejected"
+          class:list={[
+            "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+            filter === 'rejected'
+              ? "bg-[--color-malefic] text-white"
+              : "bg-[--color-linen] text-[--color-cocoa] hover:bg-[--color-warm-sand]"
+          ]}
+        >
+          Rejected ({rejectedCount || 0})
+        </a>
+      </div>
+
+      <!-- Users Table -->
+      <div class="card overflow-hidden">
+        {users && users.length > 0 ? (
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-[--color-linen]">
+                <tr>
+                  <th class="text-left py-4 px-6 text-sm font-medium text-[--color-text-muted]">User</th>
+                  <th class="text-left py-4 px-6 text-sm font-medium text-[--color-text-muted]">Email</th>
+                  <th class="text-left py-4 px-6 text-sm font-medium text-[--color-text-muted]">Status</th>
+                  <th class="text-left py-4 px-6 text-sm font-medium text-[--color-text-muted]">Registered</th>
+                  <th class="text-left py-4 px-6 text-sm font-medium text-[--color-text-muted]">Last Login</th>
+                  <th class="text-right py-4 px-6 text-sm font-medium text-[--color-text-muted]">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr class="border-b border-[--color-border] last:border-0 hover:bg-[--color-pearl]/50" data-user-id={u.id}>
+                    <td class="py-4 px-6">
+                      <div class="flex items-center gap-3">
+                        {u.avatar_url ? (
+                          <img src={u.avatar_url} alt="" class="w-10 h-10 rounded-full" />
+                        ) : (
+                          <div class="w-10 h-10 rounded-full bg-[--color-linen] flex items-center justify-center">
+                            <span class="text-sm font-medium text-[--color-cocoa]">
+                              {u.full_name?.charAt(0) || u.email.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <p class="font-medium text-[--color-espresso]">{u.full_name || 'No name'}</p>
+                          <p class="text-xs text-[--color-text-muted]">Logins: {u.login_count}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-4 px-6 text-sm text-[--color-cocoa]">{u.email}</td>
+                    <td class="py-4 px-6">
+                      <span
+                        class:list={[
+                          "user-status inline-block px-3 py-1 rounded-full text-xs font-medium",
+                          u.approval_status === 'pending' && "bg-[--color-golden-hour]/20 text-[--color-golden-hour]",
+                          u.approval_status === 'approved' && "bg-[--color-benefic]/20 text-[--color-benefic]",
+                          u.approval_status === 'rejected' && "bg-[--color-malefic]/20 text-[--color-malefic]",
+                        ]}
+                        data-status={u.approval_status}
+                      >
+                        {u.approval_status}
+                      </span>
+                    </td>
+                    <td class="py-4 px-6 text-sm text-[--color-text-muted]">
+                      {new Date(u.created_at).toLocaleDateString()}
+                    </td>
+                    <td class="py-4 px-6 text-sm text-[--color-text-muted]">
+                      {u.last_login_at ? new Date(u.last_login_at).toLocaleDateString() : 'Never'}
+                    </td>
+                    <td class="py-4 px-6">
+                      <div class="flex items-center justify-end gap-2 action-buttons">
+                        {u.approval_status === 'pending' && (
+                          <>
+                            <button
+                              class="approve-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[--color-benefic] text-white hover:bg-[--color-benefic]/90 transition-colors"
+                              data-user-id={u.id}
+                            >
+                              Approve
+                            </button>
+                            <button
+                              class="reject-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[--color-malefic] text-white hover:bg-[--color-malefic]/90 transition-colors"
+                              data-user-id={u.id}
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {u.approval_status === 'approved' && (
+                          <span class="text-xs text-[--color-text-muted]">Active</span>
+                        )}
+                        {u.approval_status === 'rejected' && (
+                          <button
+                            class="approve-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[--color-benefic] text-white hover:bg-[--color-benefic]/90 transition-colors"
+                            data-user-id={u.id}
+                          >
+                            Re-approve
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div class="text-center py-12">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-[--color-linen] flex items-center justify-center">
+              <svg class="w-8 h-8 text-[--color-text-muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <h3 class="font-heading text-lg text-[--color-espresso] mb-2">No users found</h3>
+            <p class="text-sm text-[--color-text-muted]">
+              {filter === 'all' ? 'No users have registered yet.' : `No ${filter} users.`}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+
+  <!-- Rejection Reason Modal -->
+  <div id="rejection-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50" id="modal-backdrop"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative">
+        <h3 class="font-heading text-xl text-[--color-espresso] mb-4">Reject User</h3>
+        <p class="text-sm text-[--color-text-muted] mb-4">
+          Optionally provide a reason for rejection. This will be sent to the user via email.
+        </p>
+        <textarea
+          id="rejection-reason"
+          class="input w-full h-24 resize-none"
+          placeholder="Reason for rejection (optional)"
+        ></textarea>
+        <div class="flex gap-3 mt-4">
+          <button id="cancel-reject" class="btn btn-secondary flex-1">Cancel</button>
+          <button id="confirm-reject" class="btn bg-[--color-malefic] text-white flex-1">Reject</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Handle approve/reject actions
+  const approveButtons = document.querySelectorAll('.approve-btn');
+  const rejectButtons = document.querySelectorAll('.reject-btn');
+  const modal = document.getElementById('rejection-modal');
+  const modalBackdrop = document.getElementById('modal-backdrop');
+  const cancelReject = document.getElementById('cancel-reject');
+  const confirmReject = document.getElementById('confirm-reject');
+  const rejectionReason = document.getElementById('rejection-reason') as HTMLTextAreaElement;
+
+  let currentUserId: string | null = null;
+
+  async function approveUser(userId: string, button: HTMLButtonElement) {
+    button.disabled = true;
+    button.textContent = 'Approving...';
+
+    try {
+      const response = await fetch('/api/admin/approve-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (response.ok) {
+        // Update UI
+        const row = button.closest('tr');
+        if (row) {
+          const statusBadge = row.querySelector('.user-status');
+          if (statusBadge) {
+            statusBadge.textContent = 'approved';
+            statusBadge.className = 'user-status inline-block px-3 py-1 rounded-full text-xs font-medium bg-[--color-benefic]/20 text-[--color-benefic]';
+          }
+          const actionButtons = row.querySelector('.action-buttons');
+          if (actionButtons) {
+            actionButtons.innerHTML = '<span class="text-xs text-[--color-text-muted]">Active</span>';
+          }
+        }
+      } else {
+        const data = await response.json();
+        alert('Error: ' + (data.error || 'Failed to approve user'));
+        button.disabled = false;
+        button.textContent = 'Approve';
+      }
+    } catch (error) {
+      console.error('Error approving user:', error);
+      alert('Failed to approve user. Please try again.');
+      button.disabled = false;
+      button.textContent = 'Approve';
+    }
+  }
+
+  async function rejectUser(userId: string, reason: string) {
+    try {
+      const response = await fetch('/api/admin/reject-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, reason }),
+      });
+
+      if (response.ok) {
+        // Update UI
+        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+        if (row) {
+          const statusBadge = row.querySelector('.user-status');
+          if (statusBadge) {
+            statusBadge.textContent = 'rejected';
+            statusBadge.className = 'user-status inline-block px-3 py-1 rounded-full text-xs font-medium bg-[--color-malefic]/20 text-[--color-malefic]';
+          }
+          const actionButtons = row.querySelector('.action-buttons');
+          if (actionButtons) {
+            actionButtons.innerHTML = `
+              <button
+                class="approve-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[--color-benefic] text-white hover:bg-[--color-benefic]/90 transition-colors"
+                data-user-id="${userId}"
+              >
+                Re-approve
+              </button>
+            `;
+            // Re-attach event listener
+            const newApproveBtn = actionButtons.querySelector('.approve-btn') as HTMLButtonElement;
+            newApproveBtn?.addEventListener('click', () => approveUser(userId, newApproveBtn));
+          }
+        }
+        closeModal();
+      } else {
+        const data = await response.json();
+        alert('Error: ' + (data.error || 'Failed to reject user'));
+      }
+    } catch (error) {
+      console.error('Error rejecting user:', error);
+      alert('Failed to reject user. Please try again.');
+    }
+  }
+
+  function openModal(userId: string) {
+    currentUserId = userId;
+    modal?.classList.remove('hidden');
+    rejectionReason.value = '';
+  }
+
+  function closeModal() {
+    modal?.classList.add('hidden');
+    currentUserId = null;
+  }
+
+  // Event listeners
+  approveButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const userId = (btn as HTMLButtonElement).dataset.userId;
+      if (userId) {
+        approveUser(userId, btn as HTMLButtonElement);
+      }
+    });
+  });
+
+  rejectButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const userId = (btn as HTMLButtonElement).dataset.userId;
+      if (userId) {
+        openModal(userId);
+      }
+    });
+  });
+
+  modalBackdrop?.addEventListener('click', closeModal);
+  cancelReject?.addEventListener('click', closeModal);
+
+  confirmReject?.addEventListener('click', () => {
+    if (currentUserId) {
+      rejectUser(currentUserId, rejectionReason.value);
+    }
+  });
+</script>

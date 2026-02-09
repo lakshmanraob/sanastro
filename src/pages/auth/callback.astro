@@ -1,0 +1,123 @@
+---
+import { createServerSupabaseClient, createServiceRoleClient } from '../../lib/supabase/server';
+import { sendWelcomeEmail, sendAdminNotification } from '../../lib/email/resend';
+
+const supabase = createServerSupabaseClient(Astro.cookies);
+const serviceClient = createServiceRoleClient();
+
+const code = Astro.url.searchParams.get('code');
+const errorParam = Astro.url.searchParams.get('error');
+
+// Handle OAuth errors
+if (errorParam) {
+  return Astro.redirect('/auth/login?error=auth_failed');
+}
+
+if (!code) {
+  return Astro.redirect('/auth/login?error=no_session');
+}
+
+try {
+  // Exchange code for session
+  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (exchangeError) {
+    console.error('Exchange error:', exchangeError);
+    return Astro.redirect('/auth/login?error=auth_failed');
+  }
+
+  // Use getUser() for secure user data (instead of getSession)
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    console.error('User error:', userError);
+    return Astro.redirect('/auth/login?error=auth_failed');
+  }
+
+  // Check if this is an admin
+  const { data: adminRecord } = await serviceClient
+    .from('admin_logins')
+    .select('id')
+    .eq('email', user.email)
+    .single();
+
+  if (adminRecord) {
+    // Update admin last login
+    await serviceClient
+      .from('admin_logins')
+      .update({
+        last_login_at: new Date().toISOString(),
+        auth_id: user.id // Ensure auth_id is set
+      })
+      .eq('id', adminRecord.id);
+
+    return Astro.redirect('/admin');
+  }
+
+  // Check if user already exists
+  const { data: existingUser } = await serviceClient
+    .from('user_logins')
+    .select('*')
+    .eq('auth_id', user.id)
+    .single();
+
+  if (existingUser) {
+    // Update login stats
+    await serviceClient
+      .from('user_logins')
+      .update({
+        last_login_at: new Date().toISOString(),
+        login_count: existingUser.login_count + 1,
+      })
+      .eq('id', existingUser.id);
+
+    // Redirect based on approval status
+    switch (existingUser.approval_status) {
+      case 'pending':
+        return Astro.redirect('/auth/pending');
+      case 'rejected':
+        return Astro.redirect('/auth/rejected');
+      case 'approved':
+        return Astro.redirect('/dashboard');
+      default:
+        return Astro.redirect('/auth/login');
+    }
+  }
+
+  // Create new user record
+  const { error: insertError } = await serviceClient
+    .from('user_logins')
+    .insert({
+      auth_id: user.id,
+      email: user.email!,
+      full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+      avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+      approval_status: 'pending',
+      email_verified: user.email_confirmed_at ? true : false,
+      login_count: 1,
+      last_login_at: new Date().toISOString(),
+    });
+
+  if (insertError) {
+    console.error('Error creating user:', insertError.message, insertError.details, insertError.hint);
+    return Astro.redirect('/auth/login?error=registration_failed');
+  }
+
+  // Send welcome email to user
+  await sendWelcomeEmail(
+    user.email!,
+    user.user_metadata?.full_name || user.user_metadata?.name || null
+  );
+
+  // Notify admin of new signup
+  await sendAdminNotification(
+    user.email!,
+    user.user_metadata?.full_name || user.user_metadata?.name || null
+  );
+
+  return Astro.redirect('/auth/pending');
+} catch (error) {
+  console.error('Callback error:', error);
+  return Astro.redirect('/auth/login?error=auth_failed');
+}
+---

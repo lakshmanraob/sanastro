@@ -1,0 +1,244 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import Footer from '../../components/Footer.astro';
+import { createServerSupabaseClient } from '../../lib/supabase/server';
+
+const { user, isAdmin } = Astro.locals;
+
+if (!isAdmin) {
+  return Astro.redirect('/dashboard');
+}
+
+const supabase = createServerSupabaseClient(Astro.cookies);
+
+// Get user stats
+const { count: totalUsers } = await supabase
+  .from('user_logins')
+  .select('*', { count: 'exact', head: true });
+
+const { count: pendingUsers } = await supabase
+  .from('user_logins')
+  .select('*', { count: 'exact', head: true })
+  .eq('approval_status', 'pending');
+
+const { count: approvedUsers } = await supabase
+  .from('user_logins')
+  .select('*', { count: 'exact', head: true })
+  .eq('approval_status', 'approved');
+
+const { count: rejectedUsers } = await supabase
+  .from('user_logins')
+  .select('*', { count: 'exact', head: true })
+  .eq('approval_status', 'rejected');
+
+// Get recent signups
+const { data: recentUsers } = await supabase
+  .from('user_logins')
+  .select('*')
+  .order('created_at', { ascending: false })
+  .limit(5);
+---
+
+<Layout title="Admin Dashboard">
+  <Navigation currentPath="/admin" />
+
+  <main class="pt-20 min-h-screen bg-[--color-cream]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 class="font-heading text-3xl md:text-4xl text-[--color-espresso]">
+            Admin Dashboard
+          </h1>
+          <p class="text-[--color-text-muted] mt-1">
+            Manage users and monitor platform activity
+          </p>
+        </div>
+        <a href="/admin/users" class="btn btn-primary">
+          Manage Users
+        </a>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+        <!-- Total Users -->
+        <div class="card p-6">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-[--color-celestial-blue]/20 flex items-center justify-center">
+              <svg class="w-6 h-6 text-[--color-celestial-blue]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-[--color-espresso]">{totalUsers || 0}</p>
+              <p class="text-sm text-[--color-text-muted]">Total Users</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pending -->
+        <div class="card p-6">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-[--color-golden-hour]/20 flex items-center justify-center">
+              <svg class="w-6 h-6 text-[--color-golden-hour]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-[--color-espresso]">{pendingUsers || 0}</p>
+              <p class="text-sm text-[--color-text-muted]">Pending</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approved -->
+        <div class="card p-6">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-[--color-benefic]/20 flex items-center justify-center">
+              <svg class="w-6 h-6 text-[--color-benefic]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-[--color-espresso]">{approvedUsers || 0}</p>
+              <p class="text-sm text-[--color-text-muted]">Approved</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rejected -->
+        <div class="card p-6">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-[--color-malefic]/20 flex items-center justify-center">
+              <svg class="w-6 h-6 text-[--color-malefic]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-[--color-espresso]">{rejectedUsers || 0}</p>
+              <p class="text-sm text-[--color-text-muted]">Rejected</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Signups -->
+      <div class="card p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-heading text-xl text-[--color-espresso]">Recent Signups</h2>
+          <a href="/admin/users" class="text-sm text-[--color-accent] hover:underline">View All</a>
+        </div>
+
+        {recentUsers && recentUsers.length > 0 ? (
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-[--color-border]">
+                  <th class="text-left py-3 px-4 text-sm font-medium text-[--color-text-muted]">User</th>
+                  <th class="text-left py-3 px-4 text-sm font-medium text-[--color-text-muted]">Email</th>
+                  <th class="text-left py-3 px-4 text-sm font-medium text-[--color-text-muted]">Status</th>
+                  <th class="text-left py-3 px-4 text-sm font-medium text-[--color-text-muted]">Signed Up</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentUsers.map((u) => (
+                  <tr class="border-b border-[--color-border] last:border-0">
+                    <td class="py-3 px-4">
+                      <div class="flex items-center gap-3">
+                        {u.avatar_url ? (
+                          <img src={u.avatar_url} alt="" class="w-8 h-8 rounded-full" />
+                        ) : (
+                          <div class="w-8 h-8 rounded-full bg-[--color-linen] flex items-center justify-center">
+                            <span class="text-sm font-medium text-[--color-cocoa]">
+                              {u.full_name?.charAt(0) || u.email.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <span class="text-sm text-[--color-espresso]">{u.full_name || 'No name'}</span>
+                      </div>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-[--color-cocoa]">{u.email}</td>
+                    <td class="py-3 px-4">
+                      <span class:list={[
+                        "inline-block px-2 py-1 rounded-full text-xs font-medium",
+                        u.approval_status === 'pending' && "bg-[--color-golden-hour]/20 text-[--color-golden-hour]",
+                        u.approval_status === 'approved' && "bg-[--color-benefic]/20 text-[--color-benefic]",
+                        u.approval_status === 'rejected' && "bg-[--color-malefic]/20 text-[--color-malefic]",
+                      ]}>
+                        {u.approval_status}
+                      </span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-[--color-text-muted]">
+                      {new Date(u.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div class="text-center py-8">
+            <p class="text-[--color-text-muted]">No users registered yet.</p>
+          </div>
+        )}
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="grid md:grid-cols-2 gap-6 mt-8">
+        <div class="card p-6">
+          <h3 class="font-heading text-lg text-[--color-espresso] mb-4">Quick Actions</h3>
+          <div class="space-y-3">
+            <a href="/admin/users?filter=pending" class="flex items-center gap-3 p-3 rounded-lg hover:bg-[--color-linen] transition-colors">
+              <div class="w-10 h-10 rounded-full bg-[--color-golden-hour]/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-[--color-golden-hour]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p class="font-medium text-[--color-espresso]">Review Pending Users</p>
+                <p class="text-sm text-[--color-text-muted]">{pendingUsers || 0} users awaiting approval</p>
+              </div>
+            </a>
+            <a href="/dashboard" class="flex items-center gap-3 p-3 rounded-lg hover:bg-[--color-linen] transition-colors">
+              <div class="w-10 h-10 rounded-full bg-[--color-terracotta]/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-[--color-terracotta]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              </div>
+              <div>
+                <p class="font-medium text-[--color-espresso]">Go to User Dashboard</p>
+                <p class="text-sm text-[--color-text-muted]">View the regular user interface</p>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div class="card p-6">
+          <h3 class="font-heading text-lg text-[--color-espresso] mb-4">Admin Info</h3>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-[--color-linen]">
+              {user?.user_metadata?.avatar_url ? (
+                <img src={user.user_metadata.avatar_url} alt="" class="w-10 h-10 rounded-full" />
+              ) : (
+                <div class="w-10 h-10 rounded-full bg-[--color-terracotta] flex items-center justify-center">
+                  <span class="text-white font-medium">
+                    {user?.email?.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <div>
+                <p class="font-medium text-[--color-espresso]">
+                  {user?.user_metadata?.full_name || 'Admin'}
+                </p>
+                <p class="text-sm text-[--color-text-muted]">{user?.email}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

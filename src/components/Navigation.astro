@@ -5,12 +5,21 @@ interface Props {
 
 const { currentPath = '/' } = Astro.props;
 
+// Get auth state from locals (set by middleware)
+const { session, user, isAdmin, approvalStatus } = Astro.locals;
+const isAuthenticated = !!session;
+const isApproved = approvalStatus === 'approved' || isAdmin;
+
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/chart', label: 'Chart' },
   { href: '/predictions', label: 'Predictions' },
 ];
+
+// Get user display info
+const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User';
+const userAvatar = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
 ---
 
 <nav class="fixed top-0 left-0 right-0 z-50 bg-[--color-cream]/95 backdrop-blur-sm border-b border-[--color-border]">
@@ -42,13 +51,89 @@ const navLinks = [
             {link.label}
           </a>
         ))}
+        {isAdmin && (
+          <a
+            href="/admin"
+            class:list={[
+              "nav-link text-sm tracking-wide",
+              currentPath.startsWith('/admin') && "active"
+            ]}
+          >
+            Admin
+          </a>
+        )}
       </div>
 
-      <!-- CTA Button -->
-      <div class="hidden md:block">
-        <a href="/birth-data" class="btn btn-primary text-sm">
-          Create Horoscope
-        </a>
+      <!-- Right side: Auth buttons or User menu -->
+      <div class="hidden md:flex items-center gap-4">
+        {isAuthenticated ? (
+          <>
+            {isApproved && (
+              <a href="/birth-data" class="btn btn-primary text-sm">
+                Create Horoscope
+              </a>
+            )}
+            <!-- User Dropdown -->
+            <div class="relative" id="user-menu-container">
+              <button
+                id="user-menu-btn"
+                class="flex items-center gap-2 p-1.5 rounded-full hover:bg-[--color-linen] transition-colors"
+              >
+                {userAvatar ? (
+                  <img src={userAvatar} alt="" class="w-8 h-8 rounded-full" />
+                ) : (
+                  <div class="w-8 h-8 rounded-full bg-[--color-terracotta] flex items-center justify-center">
+                    <span class="text-white text-sm font-medium">
+                      {userName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <svg class="w-4 h-4 text-[--color-cocoa]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <!-- Dropdown Menu -->
+              <div
+                id="user-dropdown"
+                class="hidden absolute right-0 mt-2 w-56 rounded-xl bg-white shadow-lg border border-[--color-border] py-2 z-50"
+              >
+                <div class="px-4 py-2 border-b border-[--color-border]">
+                  <p class="text-sm font-medium text-[--color-espresso] truncate">{userName}</p>
+                  <p class="text-xs text-[--color-text-muted] truncate">{user?.email}</p>
+                  {isAdmin && (
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-xs bg-[--color-terracotta]/20 text-[--color-terracotta]">
+                      Admin
+                    </span>
+                  )}
+                </div>
+                {isApproved && (
+                  <a href="/dashboard" class="block px-4 py-2 text-sm text-[--color-cocoa] hover:bg-[--color-linen]">
+                    Dashboard
+                  </a>
+                )}
+                {isAdmin && (
+                  <a href="/admin" class="block px-4 py-2 text-sm text-[--color-cocoa] hover:bg-[--color-linen]">
+                    Admin Panel
+                  </a>
+                )}
+                <div class="border-t border-[--color-border] mt-1 pt-1">
+                  <a href="/auth/logout" class="block px-4 py-2 text-sm text-[--color-malefic] hover:bg-red-50">
+                    Sign Out
+                  </a>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <a href="/auth/login" class="btn btn-secondary text-sm">
+              Sign In
+            </a>
+            <a href="/auth/login" class="btn btn-primary text-sm">
+              Get Started
+            </a>
+          </>
+        )}
       </div>
 
       <!-- Mobile Menu Button -->
@@ -67,6 +152,24 @@ const navLinks = [
   <!-- Mobile Menu -->
   <div id="mobile-menu" class="hidden md:hidden bg-[--color-cream] border-t border-[--color-border]">
     <div class="px-4 py-4 space-y-2">
+      {isAuthenticated && (
+        <div class="flex items-center gap-3 px-4 py-3 mb-2 rounded-lg bg-[--color-linen]">
+          {userAvatar ? (
+            <img src={userAvatar} alt="" class="w-10 h-10 rounded-full" />
+          ) : (
+            <div class="w-10 h-10 rounded-full bg-[--color-terracotta] flex items-center justify-center">
+              <span class="text-white font-medium">
+                {userName.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-[--color-espresso] truncate">{userName}</p>
+            <p class="text-xs text-[--color-text-muted] truncate">{user?.email}</p>
+          </div>
+        </div>
+      )}
+
       {navLinks.map(link => (
         <a
           href={link.href}
@@ -78,20 +181,66 @@ const navLinks = [
           {link.label}
         </a>
       ))}
-      <div class="pt-2">
-        <a href="/birth-data" class="btn btn-primary w-full text-center">
-          Create Horoscope
+
+      {isAdmin && (
+        <a
+          href="/admin"
+          class:list={[
+            "block px-4 py-3 rounded-lg nav-link",
+            currentPath.startsWith('/admin') ? "bg-[--color-linen] text-[--color-accent]" : "hover:bg-[--color-linen]"
+          ]}
+        >
+          Admin Panel
         </a>
+      )}
+
+      <div class="pt-2 space-y-2">
+        {isAuthenticated ? (
+          <>
+            {isApproved && (
+              <a href="/birth-data" class="btn btn-primary w-full text-center">
+                Create Horoscope
+              </a>
+            )}
+            <a href="/auth/logout" class="btn btn-secondary w-full text-center">
+              Sign Out
+            </a>
+          </>
+        ) : (
+          <>
+            <a href="/auth/login" class="btn btn-primary w-full text-center">
+              Sign In
+            </a>
+          </>
+        )}
       </div>
     </div>
   </div>
 </nav>
 
 <script>
+  // Mobile menu toggle
   const menuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
 
   menuBtn?.addEventListener('click', () => {
     mobileMenu?.classList.toggle('hidden');
+  });
+
+  // User dropdown toggle
+  const userMenuBtn = document.getElementById('user-menu-btn');
+  const userDropdown = document.getElementById('user-dropdown');
+
+  userMenuBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    userDropdown?.classList.toggle('hidden');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    const container = document.getElementById('user-menu-container');
+    if (container && !container.contains(e.target as Node)) {
+      userDropdown?.classList.add('hidden');
+    }
   });
 </script>
