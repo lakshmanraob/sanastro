@@ -87,17 +87,19 @@ const tabs = [
       <!-- Tab Content -->
       <div class="tab-content" id="tab-chart">
         <div class="grid lg:grid-cols-2 gap-8">
-          <!-- South Indian Chart -->
+          <!-- Birth Chart -->
           <div class="card p-6">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="font-heading text-xl text-[--color-espresso]">South Indian Chart</h2>
+              <h2 class="font-heading text-xl text-[--color-espresso]" id="chart-style-title">South Indian Chart</h2>
               <div class="flex gap-2">
-                <button class="chart-style-btn active px-3 py-1 text-xs rounded-full bg-[--color-terracotta] text-white" data-style="south">South</button>
-                <button class="chart-style-btn px-3 py-1 text-xs rounded-full bg-[--color-linen] text-[--color-text-secondary]" data-style="north">North</button>
+                <button class="chart-style-btn px-3 py-1 text-xs rounded-full bg-[--color-terracotta] text-white" data-style="south">South Indian</button>
+                <button class="chart-style-btn px-3 py-1 text-xs rounded-full bg-[--color-linen] text-[--color-text-secondary]" data-style="north">North Indian</button>
               </div>
             </div>
-            <div class="aspect-square relative bg-[--color-pearl] rounded-lg p-4">
-              <svg viewBox="0 0 400 400" class="w-full h-full" id="birth-chart">
+
+            <!-- South Indian Chart -->
+            <div id="south-indian-chart" class="aspect-square relative bg-[--color-pearl] rounded-lg p-4">
+              <svg viewBox="0 0 400 400" class="w-full h-full">
                 <!-- South Indian Chart Structure -->
                 <rect x="10" y="10" width="380" height="380" fill="none" stroke="var(--color-border)" stroke-width="2" />
                 <!-- Horizontal lines -->
@@ -151,6 +153,68 @@ const tabs = [
                 <text x="342" y="270" text-anchor="middle" class="text-xs fill-[--color-dusty-rose] font-semibold">Mo</text>
               </svg>
             </div>
+
+            <!-- North Indian Chart -->
+            <div id="north-indian-chart" class="hidden aspect-square relative bg-[--color-pearl] rounded-lg p-4">
+              <svg viewBox="0 0 400 400" class="w-full h-full">
+                <!-- North Indian Chart Structure (Diamond) -->
+                <rect x="10" y="10" width="380" height="380" fill="none" stroke="var(--color-border)" stroke-width="2" />
+                <!-- Outer diagonal lines -->
+                <line x1="10" y1="10" x2="200" y2="200" stroke="var(--color-border)" stroke-width="1" />
+                <line x1="390" y1="10" x2="200" y2="200" stroke="var(--color-border)" stroke-width="1" />
+                <line x1="10" y1="390" x2="200" y2="200" stroke="var(--color-border)" stroke-width="1" />
+                <line x1="390" y1="390" x2="200" y2="200" stroke="var(--color-border)" stroke-width="1" />
+                <!-- Middle horizontal and vertical -->
+                <line x1="10" y1="200" x2="390" y2="200" stroke="var(--color-border)" stroke-width="1" />
+                <line x1="200" y1="10" x2="200" y2="390" stroke="var(--color-border)" stroke-width="1" />
+
+                <!-- House 1 (Center Top - Ascendant) -->
+                <text x="200" y="85" text-anchor="middle" class="text-lg fill-[--color-terracotta] font-heading font-bold">1</text>
+                <text x="200" y="105" text-anchor="middle" class="text-[10px] fill-[--color-taupe]">Aries</text>
+
+                <!-- House 2 (Top Left) -->
+                <text x="105" y="55" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">12</text>
+
+                <!-- House 3 (Left Top) -->
+                <text x="55" y="105" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">11</text>
+
+                <!-- House 4 (Left Middle) -->
+                <text x="55" y="200" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">10</text>
+
+                <!-- House 5 (Left Bottom) -->
+                <text x="55" y="295" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">9</text>
+
+                <!-- House 6 (Bottom Left) -->
+                <text x="105" y="345" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">8</text>
+
+                <!-- House 7 (Center Bottom) -->
+                <text x="200" y="315" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">7</text>
+
+                <!-- House 8 (Bottom Right) -->
+                <text x="295" y="345" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">6</text>
+
+                <!-- House 9 (Right Bottom) -->
+                <text x="345" y="295" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">5</text>
+
+                <!-- House 10 (Right Middle) -->
+                <text x="345" y="200" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">4</text>
+
+                <!-- House 11 (Right Top) -->
+                <text x="345" y="105" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">3</text>
+
+                <!-- House 12 (Top Right) -->
+                <text x="295" y="55" text-anchor="middle" class="text-lg fill-[--color-espresso] font-heading">2</text>
+
+                <!-- Sample planet placements -->
+                <text x="200" y="130" text-anchor="middle" class="text-xs fill-[--color-malefic] font-semibold">Ma</text>
+                <text x="55" y="130" text-anchor="middle" class="text-xs fill-[--color-benefic] font-semibold">Ju Ve</text>
+                <text x="55" y="225" text-anchor="middle" class="text-xs fill-[--color-golden-hour] font-semibold">Su Me(R) Ke</text>
+                <text x="200" y="345" text-anchor="middle" class="text-xs fill-[--color-neutral] font-semibold">Sa(R)</text>
+                <text x="345" y="225" text-anchor="middle" class="text-xs fill-[--color-celestial-blue] font-semibold">Ra</text>
+                <text x="345" y="130" text-anchor="middle" class="text-xs fill-[--color-dusty-rose] font-semibold">Mo</text>
+              </svg>
+            </div>
+
             <div class="mt-4 flex flex-wrap gap-4 justify-center text-xs">
               <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[--color-benefic]"></span> Benefic</span>
               <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[--color-malefic]"></span> Malefic</span>
@@ -419,6 +483,47 @@ const tabs = [
   tabBtns[0]?.classList.remove('border-transparent', 'text-[--color-text-secondary]');
   tabBtns[0]?.classList.add('border-[--color-terracotta]', 'text-[--color-terracotta]');
 
+  // Chart style switching
+  const chartStyleBtns = document.querySelectorAll('.chart-style-btn');
+  const southChart = document.getElementById('south-indian-chart');
+  const northChart = document.getElementById('north-indian-chart');
+  const chartStyleTitle = document.getElementById('chart-style-title');
+
+  function setChartStyle(style: string): void {
+    // Update button states
+    chartStyleBtns.forEach((btn) => {
+      if (btn.getAttribute('data-style') === style) {
+        btn.classList.remove('bg-[--color-linen]', 'text-[--color-text-secondary]');
+        btn.classList.add('bg-[--color-terracotta]', 'text-white');
+      } else {
+        btn.classList.remove('bg-[--color-terracotta]', 'text-white');
+        btn.classList.add('bg-[--color-linen]', 'text-[--color-text-secondary]');
+      }
+    });
+
+    // Show/hide charts
+    if (style === 'south') {
+      southChart?.classList.remove('hidden');
+      northChart?.classList.add('hidden');
+      if (chartStyleTitle) chartStyleTitle.textContent = 'South Indian Chart';
+    } else {
+      southChart?.classList.add('hidden');
+      northChart?.classList.remove('hidden');
+      if (chartStyleTitle) chartStyleTitle.textContent = 'North Indian Chart';
+    }
+
+    // Save preference
+    localStorage.setItem('chartStyle', style);
+  }
+
+  // Add click handlers
+  chartStyleBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const style = btn.getAttribute('data-style');
+      if (style) setChartStyle(style);
+    });
+  });
+
   // Load birth data from localStorage
   const birthData = JSON.parse(localStorage.getItem('birthData') || '{}');
   if (birthData.name) {
@@ -429,4 +534,8 @@ const tabs = [
     document.getElementById('birth-place')!.textContent = birthData.birthPlace || 'Not specified';
     document.getElementById('birth-coords')!.textContent = `${birthData.latitude || '0'}°, ${birthData.longitude || '0'}°`;
   }
+
+  // Load chart style preference (from birth data form or saved preference)
+  const savedChartStyle = birthData.chartStyle || localStorage.getItem('chartStyle') || 'south';
+  setChartStyle(savedChartStyle);
 </script>

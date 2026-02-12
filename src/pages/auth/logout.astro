@@ -3,7 +3,22 @@ import { createServerSupabaseClient } from '../../lib/supabase/server';
 
 const supabase = createServerSupabaseClient(Astro.cookies);
 
+// Sign out from Supabase
 await supabase.auth.signOut();
+
+// Clear all Supabase auth cookies to ensure clean logout
+const cookieNames = ['sb-access-token', 'sb-refresh-token'];
+for (const name of cookieNames) {
+  Astro.cookies.delete(name, { path: '/' });
+}
+
+// Also clear project-specific cookies
+const projectRef = import.meta.env.PUBLIC_SUPABASE_URL?.match(/https:\/\/([^.]+)/)?.[1];
+if (projectRef) {
+  Astro.cookies.delete(`sb-${projectRef}-auth-token`, { path: '/' });
+  Astro.cookies.delete(`sb-${projectRef}-auth-token.0`, { path: '/' });
+  Astro.cookies.delete(`sb-${projectRef}-auth-token.1`, { path: '/' });
+}
 
 return Astro.redirect('/');
 ---

@@ -1,0 +1,415 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+
+// Planet data
+const planetSymbols: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mars: '♂', Mercury: '☿', Jupiter: '♃',
+  Venus: '♀', Saturn: '♄', Rahu: '☊', Ketu: '☋'
+};
+
+const planetColors: Record<string, string> = {
+  Sun: 'var(--color-golden-hour)',
+  Moon: 'var(--color-celestial-blue)',
+  Mars: 'var(--color-malefic)',
+  Mercury: 'var(--color-sage)',
+  Jupiter: 'var(--color-benefic)',
+  Venus: 'var(--color-terracotta)',
+  Saturn: 'var(--color-neutral)',
+  Rahu: 'var(--color-taupe)',
+  Ketu: 'var(--color-dusty-rose)',
+};
+
+// Divisional Charts (Varga Charts)
+const divisionalCharts = [
+  { id: 'D1', name: 'Rasi', fullName: 'Rasi Chart', purpose: 'Overall life, physical body, general fortune', importance: 'Primary' },
+  { id: 'D2', name: 'Hora', fullName: 'Hora Chart', purpose: 'Wealth and financial prosperity', importance: 'Secondary' },
+  { id: 'D3', name: 'Drekkana', fullName: 'Drekkana Chart', purpose: 'Siblings, courage, short journeys', importance: 'Secondary' },
+  { id: 'D4', name: 'Chaturthamsa', fullName: 'Chaturthamsa Chart', purpose: 'Property, vehicles, fixed assets', importance: 'Secondary' },
+  { id: 'D7', name: 'Saptamsa', fullName: 'Saptamsa Chart', purpose: 'Children, progeny, creativity', importance: 'Important' },
+  { id: 'D9', name: 'Navamsa', fullName: 'Navamsa Chart', purpose: 'Marriage, spouse, dharma, spiritual path', importance: 'Primary' },
+  { id: 'D10', name: 'Dasamsa', fullName: 'Dasamsa Chart', purpose: 'Career, profession, public reputation', importance: 'Primary' },
+  { id: 'D12', name: 'Dwadasamsa', fullName: 'Dwadasamsa Chart', purpose: 'Parents, ancestry, lineage', importance: 'Secondary' },
+  { id: 'D16', name: 'Shodasamsa', fullName: 'Shodasamsa Chart', purpose: 'Vehicles, conveyances, pleasures', importance: 'Secondary' },
+  { id: 'D20', name: 'Vimsamsa', fullName: 'Vimsamsa Chart', purpose: 'Spiritual practices, upasana', importance: 'Secondary' },
+  { id: 'D24', name: 'Chaturvimsamsa', fullName: 'Chaturvimsamsa Chart', purpose: 'Education, learning, academic success', importance: 'Important' },
+  { id: 'D27', name: 'Saptavimsamsa', fullName: 'Nakshatramsa Chart', purpose: 'Strengths and weaknesses', importance: 'Secondary' },
+  { id: 'D30', name: 'Trimsamsa', fullName: 'Trimsamsa Chart', purpose: 'Misfortunes, evils, health issues', importance: 'Secondary' },
+  { id: 'D40', name: 'Khavedamsa', fullName: 'Khavedamsa Chart', purpose: 'Auspicious/inauspicious effects', importance: 'Secondary' },
+  { id: 'D45', name: 'Akshavedamsa', fullName: 'Akshavedamsa Chart', purpose: 'Character, conduct, morality', importance: 'Secondary' },
+  { id: 'D60', name: 'Shashtiamsa', fullName: 'Shashtiamsa Chart', purpose: 'Past life karma, overall destiny', importance: 'Important' },
+];
+
+// Important Yogas
+const yogas = [
+  {
+    name: 'Gajakesari Yoga',
+    planets: ['Jupiter', 'Moon'],
+    condition: 'Jupiter in kendra from Moon',
+    result: 'Fame, wealth, virtuous nature, long-lasting reputation',
+    present: true,
+  },
+  {
+    name: 'Budhaditya Yoga',
+    planets: ['Sun', 'Mercury'],
+    condition: 'Sun and Mercury conjunction',
+    result: 'Intelligence, fame in scholarly pursuits, communication skills',
+    present: true,
+  },
+  {
+    name: 'Chandra-Mangal Yoga',
+    planets: ['Moon', 'Mars'],
+    condition: 'Moon and Mars conjunction or mutual aspect',
+    result: 'Wealth through self-effort, business acumen',
+    present: false,
+  },
+  {
+    name: 'Dhana Yoga',
+    planets: ['Multiple'],
+    condition: '2nd and 11th lords connected',
+    result: 'Wealth accumulation and financial prosperity',
+    present: true,
+  },
+  {
+    name: 'Raja Yoga',
+    planets: ['Multiple'],
+    condition: 'Kendra and Trikona lords connected',
+    result: 'Power, authority, leadership positions',
+    present: true,
+  },
+  {
+    name: 'Viparita Raja Yoga',
+    planets: ['6th/8th/12th lords'],
+    condition: '6th, 8th, 12th lords in each other\'s houses',
+    result: 'Success through adversity, rise after fall',
+    present: false,
+  },
+  {
+    name: 'Parivartana Yoga',
+    planets: ['Any two'],
+    condition: 'Exchange of houses between two planets',
+    result: 'Enhanced results of both houses involved',
+    present: true,
+  },
+  {
+    name: 'Neecha Bhanga Raja Yoga',
+    planets: ['Debilitated planet'],
+    condition: 'Debilitated planet gets cancellation',
+    result: 'Rise from humble beginnings to great heights',
+    present: false,
+  },
+];
+
+// Ashtakavarga sample data
+const ashtakavargaData = {
+  bhinnashtakavarga: [
+    { planet: 'Sun', points: [4, 5, 3, 2, 6, 3, 4, 5, 3, 4, 5, 4] },
+    { planet: 'Moon', points: [5, 4, 4, 5, 3, 4, 6, 3, 5, 4, 3, 5] },
+    { planet: 'Mars', points: [3, 5, 4, 3, 4, 5, 3, 4, 5, 4, 5, 3] },
+    { planet: 'Mercury', points: [5, 4, 6, 4, 5, 3, 4, 5, 4, 6, 4, 4] },
+    { planet: 'Jupiter', points: [6, 5, 4, 5, 4, 5, 5, 4, 6, 5, 6, 5] },
+    { planet: 'Venus', points: [4, 5, 5, 4, 5, 6, 4, 5, 4, 5, 5, 4] },
+    { planet: 'Saturn', points: [3, 4, 3, 4, 3, 4, 5, 3, 4, 3, 4, 5] },
+  ],
+  sarvashtakavarga: [30, 32, 29, 27, 30, 30, 31, 29, 31, 31, 32, 30],
+};
+
+// Panchanga elements
+const panchangaData = {
+  tithi: { name: 'Shukla Dashami', lord: 'Sun', type: 'Bhadra' },
+  nakshatra: { name: 'Rohini', lord: 'Moon', pada: 2 },
+  yoga: { name: 'Siddha', type: 'Auspicious' },
+  karana: { name: 'Balava', type: 'Movable' },
+  vara: { name: 'Saturday', lord: 'Saturn' },
+};
+---
+
+<Layout title="Vedic Astrology - Traditional Analysis">
+  <Navigation currentPath="/vedic" />
+
+  <main class="pt-20 min-h-screen bg-[--color-cream]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="font-heading text-3xl text-[--color-espresso] mb-2">Vedic Astrology Analysis</h1>
+        <p class="text-[--color-text-secondary]">
+          Traditional Jyotish analysis including divisional charts, yogas, ashtakavarga, and panchanga.
+          Complementing the KP system with classical Vedic wisdom.
+        </p>
+      </div>
+
+      <!-- Panchanga -->
+      <div class="card p-6 mb-8 bg-gradient-to-r from-[--color-golden-hour]/10 to-[--color-terracotta]/10">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">Panchanga (Five Limbs of Time)</h2>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div class="p-4 rounded-lg bg-white/70 border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-1">Tithi (Lunar Day)</p>
+            <p class="font-heading font-medium text-[--color-espresso]">{panchangaData.tithi.name}</p>
+            <p class="text-xs text-[--color-text-secondary]">Lord: {panchangaData.tithi.lord}</p>
+          </div>
+          <div class="p-4 rounded-lg bg-white/70 border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-1">Nakshatra (Star)</p>
+            <p class="font-heading font-medium text-[--color-espresso]">{panchangaData.nakshatra.name}</p>
+            <p class="text-xs text-[--color-text-secondary]">Pada {panchangaData.nakshatra.pada}</p>
+          </div>
+          <div class="p-4 rounded-lg bg-white/70 border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-1">Yoga</p>
+            <p class="font-heading font-medium text-[--color-espresso]">{panchangaData.yoga.name}</p>
+            <p class="text-xs text-[--color-text-secondary]">{panchangaData.yoga.type}</p>
+          </div>
+          <div class="p-4 rounded-lg bg-white/70 border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-1">Karana (Half Tithi)</p>
+            <p class="font-heading font-medium text-[--color-espresso]">{panchangaData.karana.name}</p>
+            <p class="text-xs text-[--color-text-secondary]">{panchangaData.karana.type}</p>
+          </div>
+          <div class="p-4 rounded-lg bg-white/70 border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-1">Vara (Weekday)</p>
+            <p class="font-heading font-medium text-[--color-espresso]">{panchangaData.vara.name}</p>
+            <p class="text-xs text-[--color-text-secondary]">Lord: {panchangaData.vara.lord}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divisional Charts -->
+      <div class="card p-6 mb-8">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">Varga Charts (Divisional Charts)</h2>
+        <p class="text-sm text-[--color-text-secondary] mb-6">
+          The 16 divisional charts (Shodashvarga) provide deeper insights into specific life areas.
+          Each chart divides the zodiac differently to reveal hidden patterns.
+        </p>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {divisionalCharts.slice(0, 8).map((chart) => (
+            <div class={`p-4 rounded-lg border ${chart.importance === 'Primary' ? 'border-[--color-terracotta] bg-[--color-terracotta]/5' : 'border-[--color-border] bg-[--color-pearl]'}`}>
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-heading font-bold text-[--color-terracotta]">{chart.id}</span>
+                {chart.importance === 'Primary' && (
+                  <span class="text-xs px-2 py-0.5 bg-[--color-terracotta]/20 text-[--color-terracotta] rounded-full">Primary</span>
+                )}
+              </div>
+              <p class="font-medium text-[--color-espresso] mb-1">{chart.fullName}</p>
+              <p class="text-xs text-[--color-text-secondary]">{chart.purpose}</p>
+            </div>
+          ))}
+        </div>
+
+        <button class="mt-4 btn btn-ghost text-sm" id="toggle-more-charts">
+          Show More Charts
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <div class="hidden mt-4 grid md:grid-cols-2 lg:grid-cols-4 gap-4" id="more-charts">
+          {divisionalCharts.slice(8).map((chart) => (
+            <div class="p-4 rounded-lg border border-[--color-border] bg-[--color-pearl]">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-heading font-bold text-[--color-terracotta]">{chart.id}</span>
+                {chart.importance === 'Important' && (
+                  <span class="text-xs px-2 py-0.5 bg-[--color-celestial-blue]/20 text-[--color-celestial-blue] rounded-full">Important</span>
+                )}
+              </div>
+              <p class="font-medium text-[--color-espresso] mb-1">{chart.fullName}</p>
+              <p class="text-xs text-[--color-text-secondary]">{chart.purpose}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Yogas -->
+      <div class="card p-6 mb-8">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">Planetary Yogas</h2>
+        <p class="text-sm text-[--color-text-secondary] mb-6">
+          Yogas are special planetary combinations that indicate specific results.
+          Multiple yogas can be present in a chart, each contributing to the native's destiny.
+        </p>
+
+        <div class="space-y-4">
+          {yogas.map((yoga) => (
+            <div class={`p-4 rounded-lg border ${yoga.present ? 'border-[--color-benefic] bg-[--color-benefic]/5' : 'border-[--color-border] bg-[--color-pearl]'}`}>
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <h3 class="font-heading font-medium text-[--color-espresso]">{yoga.name}</h3>
+                    {yoga.present ? (
+                      <span class="px-2 py-0.5 text-xs font-semibold bg-[--color-benefic] text-white rounded-full">
+                        Present
+                      </span>
+                    ) : (
+                      <span class="px-2 py-0.5 text-xs font-semibold bg-[--color-neutral]/30 text-[--color-text-muted] rounded-full">
+                        Not Present
+                      </span>
+                    )}
+                  </div>
+                  <p class="text-sm text-[--color-text-secondary] mb-2">
+                    <strong>Condition:</strong> {yoga.condition}
+                  </p>
+                  <p class="text-sm text-[--color-text-secondary]">
+                    <strong>Result:</strong> {yoga.result}
+                  </p>
+                </div>
+                <div class="flex gap-1">
+                  {yoga.planets.slice(0, 2).map((planet) => (
+                    <span class="text-xl" style={`color: ${planetColors[planet] || 'var(--color-text-muted)'}`}>
+                      {planetSymbols[planet] || '✦'}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Ashtakavarga -->
+      <div class="card p-6 mb-8">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">Ashtakavarga Analysis</h2>
+        <p class="text-sm text-[--color-text-secondary] mb-6">
+          Ashtakavarga is a point-based system showing strength of planets in different houses.
+          Higher points indicate favorable results; lower points suggest challenges.
+        </p>
+
+        <!-- Sarvashtakavarga -->
+        <div class="mb-6">
+          <h3 class="text-sm font-semibold text-[--color-espresso] mb-3">Sarvashtakavarga (Combined Points)</h3>
+          <div class="grid grid-cols-12 gap-2">
+            {ashtakavargaData.sarvashtakavarga.map((points, index) => (
+              <div class={`text-center p-3 rounded-lg ${points >= 30 ? 'bg-[--color-benefic]/20' : points >= 25 ? 'bg-[--color-golden-hour]/20' : 'bg-[--color-malefic]/20'}`}>
+                <p class="text-xs text-[--color-text-muted]">{index + 1}</p>
+                <p class={`font-bold ${points >= 30 ? 'text-[--color-benefic]' : points >= 25 ? 'text-[--color-golden-hour]' : 'text-[--color-malefic]'}`}>
+                  {points}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div class="mt-2 flex gap-4 text-xs text-[--color-text-muted]">
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-[--color-benefic]/20"></span> 30+ Excellent</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-[--color-golden-hour]/20"></span> 25-29 Good</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-[--color-malefic]/20"></span> Below 25 Challenging</span>
+          </div>
+        </div>
+
+        <!-- Bhinnashtakavarga Table -->
+        <div>
+          <h3 class="text-sm font-semibold text-[--color-espresso] mb-3">Bhinnashtakavarga (Planet-wise Points)</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-[--color-linen]">
+                <tr>
+                  <th class="px-3 py-2 text-left font-medium text-[--color-espresso]">Planet</th>
+                  {[1,2,3,4,5,6,7,8,9,10,11,12].map((h) => (
+                    <th class="px-2 py-2 text-center font-medium text-[--color-espresso]">{h}</th>
+                  ))}
+                  <th class="px-3 py-2 text-center font-medium text-[--color-espresso]">Total</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[--color-border]">
+                {ashtakavargaData.bhinnashtakavarga.map((row, index) => (
+                  <tr class={index % 2 === 0 ? 'bg-white' : 'bg-[--color-pearl]'}>
+                    <td class="px-3 py-2">
+                      <span class="flex items-center gap-1">
+                        <span style={`color: ${planetColors[row.planet]}`}>{planetSymbols[row.planet]}</span>
+                        <span class="font-medium">{row.planet}</span>
+                      </span>
+                    </td>
+                    {row.points.map((p) => (
+                      <td class={`px-2 py-2 text-center ${p >= 5 ? 'text-[--color-benefic] font-medium' : p <= 2 ? 'text-[--color-malefic]' : ''}`}>
+                        {p}
+                      </td>
+                    ))}
+                    <td class="px-3 py-2 text-center font-bold text-[--color-espresso]">
+                      {row.points.reduce((a, b) => a + b, 0)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strength Analysis -->
+      <div class="card p-6 mb-8">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">Shadbala (Six-fold Strength)</h2>
+        <p class="text-sm text-[--color-text-secondary] mb-6">
+          Shadbala measures planetary strength through six parameters. Higher values indicate stronger influence.
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          {['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'].map((planet) => {
+            const strength = Math.random() * 100 + 100; // Sample value
+            const isStrong = strength > 150;
+            return (
+              <div class="p-4 rounded-lg bg-[--color-pearl] border border-[--color-border]">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl" style={`color: ${planetColors[planet]}`}>{planetSymbols[planet]}</span>
+                    <span class="font-medium text-[--color-espresso]">{planet}</span>
+                  </div>
+                  <span class={`text-xs px-2 py-1 rounded-full ${isStrong ? 'bg-[--color-benefic]/20 text-[--color-benefic]' : 'bg-[--color-neutral]/20 text-[--color-text-muted]'}`}>
+                    {isStrong ? 'Strong' : 'Average'}
+                  </span>
+                </div>
+                <div class="w-full h-2 bg-[--color-linen] rounded-full overflow-hidden">
+                  <div
+                    class="h-full rounded-full transition-all"
+                    style={`width: ${Math.min(strength / 2, 100)}%; background-color: ${isStrong ? 'var(--color-benefic)' : 'var(--color-neutral)'}`}
+                  ></div>
+                </div>
+                <p class="text-xs text-[--color-text-muted] mt-1">{strength.toFixed(0)} Virupas</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <!-- KP vs Vedic -->
+      <div class="p-6 rounded-lg bg-[--color-warm-sand] border border-[--color-border]">
+        <h3 class="font-heading text-lg text-[--color-espresso] mb-3">Integrating KP with Traditional Vedic</h3>
+        <div class="grid md:grid-cols-2 gap-6 text-sm text-[--color-text-secondary]">
+          <div>
+            <h4 class="font-medium text-[--color-espresso] mb-2">When to Use Vedic Analysis</h4>
+            <ul class="space-y-1">
+              <li>• Yogas for overall life pattern assessment</li>
+              <li>• Divisional charts for specific life area depth</li>
+              <li>• Ashtakavarga for transit predictions</li>
+              <li>• Shadbala for remedial measures</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-medium text-[--color-espresso] mb-2">KP System Advantages</h4>
+            <ul class="space-y-1">
+              <li>• Precise event timing through sub lords</li>
+              <li>• Clear yes/no predictions possible</li>
+              <li>• Significator-based objective analysis</li>
+              <li>• Prashna (horary) for immediate questions</li>
+            </ul>
+          </div>
+        </div>
+        <p class="mt-4 text-sm text-[--color-text-secondary]">
+          <strong>Best Practice:</strong> Use Vedic analysis for understanding potential and patterns,
+          and KP system for precise timing and event prediction.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  // Toggle more charts
+  const toggleBtn = document.getElementById('toggle-more-charts');
+  const moreCharts = document.getElementById('more-charts');
+
+  toggleBtn?.addEventListener('click', () => {
+    moreCharts?.classList.toggle('hidden');
+    const svg = toggleBtn.querySelector('svg');
+    svg?.classList.toggle('rotate-180');
+
+    toggleBtn.innerHTML = moreCharts?.classList.contains('hidden')
+      ? 'Show More Charts <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>'
+      : 'Show Less <svg class="w-4 h-4 ml-1 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>';
+  });
+</script>

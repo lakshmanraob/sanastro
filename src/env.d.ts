@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly RESEND_API_KEY: string;
   readonly PUBLIC_APP_URL: string;
   readonly ADMIN_EMAILS: string;
+  readonly GOOGLE_PLACES_API_KEY: string;
 }
 
 interface ImportMeta {

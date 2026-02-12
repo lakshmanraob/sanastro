@@ -2,21 +2,17 @@
 const footerLinks = {
   features: [
     { href: '/chart', label: 'Birth Chart' },
-    { href: '/cusps', label: 'Cusp Analysis' },
-    { href: '/planets', label: 'Planet Details' },
-    { href: '/dasha', label: 'Dasha Timeline' },
+    { href: '/significators', label: 'Significators' },
+    { href: '/dasha', label: 'Vimshottari Dasha' },
+    { href: '/prashna', label: 'Prashna Shastra' },
+    { href: '/vedic', label: 'Vedic Analysis' },
   ],
   predictions: [
-    { href: '/predictions/marriage', label: 'Marriage' },
-    { href: '/predictions/career', label: 'Career' },
-    { href: '/predictions/finance', label: 'Finance' },
-    { href: '/predictions/health', label: 'Health' },
-  ],
-  resources: [
-    { href: '/learn', label: 'Learn KP' },
-    { href: '/glossary', label: 'Glossary' },
-    { href: '/faq', label: 'FAQ' },
-    { href: '/about', label: 'About Us' },
+    { href: '/predictions#education', label: 'Education' },
+    { href: '/predictions#mortgage', label: 'Mortgage' },
+    { href: '/predictions#realestate', label: 'Real Estate' },
+    { href: '/predictions#matchmaking', label: 'Match Making' },
+    { href: '/predictions#love', label: 'Love & Relationships' },
   ],
 };
 ---
@@ -82,17 +78,30 @@ const footerLinks = {
         </ul>
       </div>
 
-      <!-- Resources -->
+      <!-- Analysis Tools -->
       <div>
-        <h4 class="font-heading font-medium text-[--color-espresso] mb-4">Resources</h4>
+        <h4 class="font-heading font-medium text-[--color-espresso] mb-4">Analysis</h4>
         <ul class="space-y-2">
-          {footerLinks.resources.map(link => (
-            <li>
-              <a href={link.href} class="text-sm text-[--color-text-secondary] hover:text-[--color-accent] transition-colors">
-                {link.label}
-              </a>
-            </li>
-          ))}
+          <li>
+            <a href="/dasha" class="text-sm text-[--color-text-secondary] hover:text-[--color-accent] transition-colors">
+              Vimshottari Dasha
+            </a>
+          </li>
+          <li>
+            <a href="/significators" class="text-sm text-[--color-text-secondary] hover:text-[--color-accent] transition-colors">
+              KP Significators
+            </a>
+          </li>
+          <li>
+            <a href="/prashna" class="text-sm text-[--color-text-secondary] hover:text-[--color-accent] transition-colors">
+              Prashna Shastra
+            </a>
+          </li>
+          <li>
+            <a href="/vedic" class="text-sm text-[--color-text-secondary] hover:text-[--color-accent] transition-colors">
+              Vedic Astrology
+            </a>
+          </li>
         </ul>
       </div>
     </div>

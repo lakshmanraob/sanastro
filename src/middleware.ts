@@ -17,7 +17,32 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createServerSupabaseClient(context.cookies);
 
   // Use getUser() for secure authentication (not getSession)
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data, error: userError } = await supabase.auth.getUser();
+
+    // Handle invalid refresh token by clearing cookies
+    if (userError && (userError.message?.includes('Refresh Token') || userError.code === 'refresh_token_not_found')) {
+      // Clear all Supabase auth cookies
+      const cookieNames = ['sb-access-token', 'sb-refresh-token'];
+      for (const name of cookieNames) {
+        context.cookies.delete(name, { path: '/' });
+      }
+      // Also try to clear project-specific cookies
+      const projectRef = import.meta.env.PUBLIC_SUPABASE_URL?.match(/https:\/\/([^.]+)/)?.[1];
+      if (projectRef) {
+        context.cookies.delete(`sb-${projectRef}-auth-token`, { path: '/' });
+        context.cookies.delete(`sb-${projectRef}-auth-token.0`, { path: '/' });
+        context.cookies.delete(`sb-${projectRef}-auth-token.1`, { path: '/' });
+      }
+      user = null;
+    } else {
+      user = data?.user ?? null;
+    }
+  } catch (error) {
+    console.error('Auth error in middleware:', error);
+    user = null;
+  }
 
   // Initialize locals
   context.locals.session = user ? { user } as any : null;

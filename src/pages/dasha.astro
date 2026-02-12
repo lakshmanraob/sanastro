@@ -3,91 +3,10 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 
-// Sample Dasha data
-const dashaData = {
-  balance: { planet: 'Venus', years: 12, months: 4, days: 15 },
-  mahadashas: [
-    {
-      planet: 'Venus',
-      symbol: '♀',
-      years: 20,
-      start: '1990-01-15',
-      end: '2010-01-15',
-      color: 'terracotta',
-      current: false,
-      antardashas: [
-        { planet: 'Venus', start: '1990-01-15', end: '1993-05-15' },
-        { planet: 'Sun', start: '1993-05-15', end: '1994-05-15' },
-        { planet: 'Moon', start: '1994-05-15', end: '1996-01-15' },
-        { planet: 'Mars', start: '1996-01-15', end: '1997-03-15' },
-        { planet: 'Rahu', start: '1997-03-15', end: '2000-03-15' },
-        { planet: 'Jupiter', start: '2000-03-15', end: '2002-11-15' },
-        { planet: 'Saturn', start: '2002-11-15', end: '2006-01-15' },
-        { planet: 'Mercury', start: '2006-01-15', end: '2008-11-15' },
-        { planet: 'Ketu', start: '2008-11-15', end: '2010-01-15' },
-      ],
-    },
-    {
-      planet: 'Sun',
-      symbol: '☉',
-      years: 6,
-      start: '2010-01-15',
-      end: '2016-01-15',
-      color: 'golden-hour',
-      current: false,
-      antardashas: [
-        { planet: 'Sun', start: '2010-01-15', end: '2010-05-03' },
-        { planet: 'Moon', start: '2010-05-03', end: '2010-11-03' },
-        { planet: 'Mars', start: '2010-11-03', end: '2011-03-09' },
-        { planet: 'Rahu', start: '2011-03-09', end: '2012-01-27' },
-        { planet: 'Jupiter', start: '2012-01-27', end: '2012-11-15' },
-        { planet: 'Saturn', start: '2012-11-15', end: '2013-10-27' },
-        { planet: 'Mercury', start: '2013-10-27', end: '2014-09-03' },
-        { planet: 'Ketu', start: '2014-09-03', end: '2015-01-09' },
-        { planet: 'Venus', start: '2015-01-09', end: '2016-01-15' },
-      ],
-    },
-    {
-      planet: 'Moon',
-      symbol: '☽',
-      years: 10,
-      start: '2016-01-15',
-      end: '2026-01-15',
-      color: 'celestial-blue',
-      current: true,
-      antardashas: [
-        { planet: 'Moon', start: '2016-01-15', end: '2016-11-15' },
-        { planet: 'Mars', start: '2016-11-15', end: '2017-06-15' },
-        { planet: 'Rahu', start: '2017-06-15', end: '2019-01-15' },
-        { planet: 'Jupiter', start: '2019-01-15', end: '2020-05-15' },
-        { planet: 'Saturn', start: '2020-05-15', end: '2021-12-15' },
-        { planet: 'Mercury', start: '2021-12-15', end: '2023-05-15' },
-        { planet: 'Ketu', start: '2023-05-15', end: '2023-12-15' },
-        { planet: 'Venus', start: '2023-12-15', end: '2025-08-15', current: true },
-        { planet: 'Sun', start: '2025-08-15', end: '2026-01-15' },
-      ],
-    },
-    {
-      planet: 'Mars',
-      symbol: '♂',
-      years: 7,
-      start: '2026-01-15',
-      end: '2033-01-15',
-      color: 'malefic',
-      current: false,
-      antardashas: [],
-    },
-    {
-      planet: 'Rahu',
-      symbol: '☊',
-      years: 18,
-      start: '2033-01-15',
-      end: '2051-01-15',
-      color: 'neutral',
-      current: false,
-      antardashas: [],
-    },
-  ],
+// Planet symbols and colors
+const planetSymbols: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mars: '♂', Mercury: '☿', Jupiter: '♃',
+  Venus: '♀', Saturn: '♄', Rahu: '☊', Ketu: '☋'
 };
 
 const planetColors: Record<string, string> = {
@@ -101,18 +20,152 @@ const planetColors: Record<string, string> = {
   Rahu: 'var(--color-taupe)',
   Ketu: 'var(--color-dusty-rose)',
 };
+
+// Vimshottari Dasha Years
+const dashaYears: Record<string, number> = {
+  Sun: 6, Moon: 10, Mars: 7, Rahu: 18, Jupiter: 16,
+  Saturn: 19, Mercury: 17, Ketu: 7, Venus: 20
+};
+
+// Dasha sequence
+const dashaSequence = ['Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury', 'Ketu', 'Venus'];
+
+// Sample comprehensive Dasha data with all 5 levels
+const dashaData = {
+  balance: { planet: 'Venus', years: 12, months: 4, days: 15 },
+  currentPeriod: {
+    mahadasha: { planet: 'Moon', start: '2016-01-15', end: '2026-01-15' },
+    antardasha: { planet: 'Venus', start: '2023-12-15', end: '2025-08-15' },
+    pratyantardasha: { planet: 'Jupiter', start: '2024-06-10', end: '2024-09-22' },
+    sookshmadasha: { planet: 'Saturn', start: '2024-07-15', end: '2024-08-02' },
+    pranadasha: { planet: 'Mercury', start: '2024-07-20', end: '2024-07-23' },
+  },
+  mahadashas: [
+    {
+      planet: 'Venus',
+      years: 20,
+      start: '1990-01-15',
+      end: '2010-01-15',
+      current: false,
+      antardashas: [
+        { planet: 'Venus', start: '1990-01-15', end: '1993-05-15', duration: '3y 4m' },
+        { planet: 'Sun', start: '1993-05-15', end: '1994-05-15', duration: '1y 0m' },
+        { planet: 'Moon', start: '1994-05-15', end: '1996-01-15', duration: '1y 8m' },
+        { planet: 'Mars', start: '1996-01-15', end: '1997-03-15', duration: '1y 2m' },
+        { planet: 'Rahu', start: '1997-03-15', end: '2000-03-15', duration: '3y 0m' },
+        { planet: 'Jupiter', start: '2000-03-15', end: '2002-11-15', duration: '2y 8m' },
+        { planet: 'Saturn', start: '2002-11-15', end: '2006-01-15', duration: '3y 2m' },
+        { planet: 'Mercury', start: '2006-01-15', end: '2008-11-15', duration: '2y 10m' },
+        { planet: 'Ketu', start: '2008-11-15', end: '2010-01-15', duration: '1y 2m' },
+      ],
+    },
+    {
+      planet: 'Sun',
+      years: 6,
+      start: '2010-01-15',
+      end: '2016-01-15',
+      current: false,
+      antardashas: [
+        { planet: 'Sun', start: '2010-01-15', end: '2010-05-03', duration: '3m 18d' },
+        { planet: 'Moon', start: '2010-05-03', end: '2010-11-03', duration: '6m 0d' },
+        { planet: 'Mars', start: '2010-11-03', end: '2011-03-09', duration: '4m 6d' },
+        { planet: 'Rahu', start: '2011-03-09', end: '2012-01-27', duration: '10m 18d' },
+        { planet: 'Jupiter', start: '2012-01-27', end: '2012-11-15', duration: '9m 18d' },
+        { planet: 'Saturn', start: '2012-11-15', end: '2013-10-27', duration: '11m 12d' },
+        { planet: 'Mercury', start: '2013-10-27', end: '2014-09-03', duration: '10m 6d' },
+        { planet: 'Ketu', start: '2014-09-03', end: '2015-01-09', duration: '4m 6d' },
+        { planet: 'Venus', start: '2015-01-09', end: '2016-01-15', duration: '1y 0m' },
+      ],
+    },
+    {
+      planet: 'Moon',
+      years: 10,
+      start: '2016-01-15',
+      end: '2026-01-15',
+      current: true,
+      antardashas: [
+        { planet: 'Moon', start: '2016-01-15', end: '2016-11-15', duration: '10m 0d' },
+        { planet: 'Mars', start: '2016-11-15', end: '2017-06-15', duration: '7m 0d' },
+        { planet: 'Rahu', start: '2017-06-15', end: '2019-01-15', duration: '1y 7m' },
+        { planet: 'Jupiter', start: '2019-01-15', end: '2020-05-15', duration: '1y 4m' },
+        { planet: 'Saturn', start: '2020-05-15', end: '2021-12-15', duration: '1y 7m' },
+        { planet: 'Mercury', start: '2021-12-15', end: '2023-05-15', duration: '1y 5m' },
+        { planet: 'Ketu', start: '2023-05-15', end: '2023-12-15', duration: '7m 0d' },
+        { planet: 'Venus', start: '2023-12-15', end: '2025-08-15', duration: '1y 8m', current: true,
+          pratyantardashas: [
+            { planet: 'Venus', start: '2023-12-15', end: '2024-03-22', duration: '3m 7d' },
+            { planet: 'Sun', start: '2024-03-22', end: '2024-04-12', duration: '21d' },
+            { planet: 'Moon', start: '2024-04-12', end: '2024-05-17', duration: '1m 5d' },
+            { planet: 'Mars', start: '2024-05-17', end: '2024-06-10', duration: '24d' },
+            { planet: 'Rahu', start: '2024-06-10', end: '2024-08-15', duration: '2m 5d' },
+            { planet: 'Jupiter', start: '2024-06-10', end: '2024-09-22', duration: '3m 12d', current: true,
+              sookshmadashas: [
+                { planet: 'Jupiter', start: '2024-06-10', end: '2024-06-28', duration: '18d' },
+                { planet: 'Saturn', start: '2024-06-28', end: '2024-07-18', duration: '20d' },
+                { planet: 'Mercury', start: '2024-07-18', end: '2024-08-05', duration: '18d', current: true,
+                  pranadashas: [
+                    { planet: 'Mercury', start: '2024-07-18', end: '2024-07-20', duration: '2d' },
+                    { planet: 'Ketu', start: '2024-07-20', end: '2024-07-22', duration: '2d', current: true },
+                    { planet: 'Venus', start: '2024-07-22', end: '2024-07-25', duration: '3d' },
+                    { planet: 'Sun', start: '2024-07-25', end: '2024-07-26', duration: '1d' },
+                    { planet: 'Moon', start: '2024-07-26', end: '2024-07-28', duration: '2d' },
+                  ]
+                },
+                { planet: 'Ketu', start: '2024-08-05', end: '2024-08-15', duration: '10d' },
+                { planet: 'Venus', start: '2024-08-15', end: '2024-09-05', duration: '21d' },
+              ]
+            },
+            { planet: 'Saturn', start: '2024-09-22', end: '2024-12-10', duration: '2m 18d' },
+            { planet: 'Mercury', start: '2024-12-10', end: '2025-03-02', duration: '2m 20d' },
+            { planet: 'Ketu', start: '2025-03-02', end: '2025-03-26', duration: '24d' },
+          ]
+        },
+        { planet: 'Sun', start: '2025-08-15', end: '2026-01-15', duration: '5m 0d' },
+      ],
+    },
+    {
+      planet: 'Mars',
+      years: 7,
+      start: '2026-01-15',
+      end: '2033-01-15',
+      current: false,
+      antardashas: [],
+    },
+    {
+      planet: 'Rahu',
+      years: 18,
+      start: '2033-01-15',
+      end: '2051-01-15',
+      current: false,
+      antardashas: [],
+    },
+  ],
+};
+
+// Dasha period meanings
+const dashaMeanings: Record<string, { theme: string; keywords: string[] }> = {
+  Sun: { theme: 'Authority, Recognition & Self-Expression', keywords: ['Leadership', 'Government', 'Father', 'Health', 'Vitality'] },
+  Moon: { theme: 'Emotions, Mind & Nurturing', keywords: ['Mother', 'Mind', 'Public', 'Travel', 'Comfort'] },
+  Mars: { theme: 'Energy, Action & Competition', keywords: ['Courage', 'Property', 'Siblings', 'Surgery', 'Ambition'] },
+  Mercury: { theme: 'Communication, Learning & Commerce', keywords: ['Intelligence', 'Business', 'Education', 'Speech', 'Skills'] },
+  Jupiter: { theme: 'Wisdom, Expansion & Blessings', keywords: ['Teacher', 'Children', 'Spirituality', 'Wealth', 'Fortune'] },
+  Venus: { theme: 'Love, Beauty & Pleasures', keywords: ['Marriage', 'Arts', 'Luxury', 'Vehicles', 'Relationships'] },
+  Saturn: { theme: 'Discipline, Karma & Hard Work', keywords: ['Career', 'Longevity', 'Servants', 'Delays', 'Perseverance'] },
+  Rahu: { theme: 'Desires, Obsession & Worldly Gains', keywords: ['Foreign', 'Unconventional', 'Technology', 'Ambition', 'Illusion'] },
+  Ketu: { theme: 'Spirituality, Detachment & Past Karma', keywords: ['Liberation', 'Occult', 'Losses', 'Healing', 'Isolation'] },
+};
 ---
 
-<Layout title="Dasha Timeline">
+<Layout title="Vimshottari Dasha - Complete Analysis">
   <Navigation currentPath="/dasha" />
 
   <main class="pt-20 min-h-screen bg-[--color-cream]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="font-heading text-3xl text-[--color-espresso] mb-2">Vimshottari Dasha Timeline</h1>
+        <h1 class="font-heading text-3xl text-[--color-espresso] mb-2">Vimshottari Dasha Analysis</h1>
         <p class="text-[--color-text-secondary]">
-          120-year planetary period system showing Mahadasha, Antardasha, and current running periods.
+          Complete 5-level planetary period system: Mahadasha, Antardasha (Bhukti), Pratyantardasha, Sookshma, and Prana Dasha.
         </p>
       </div>
 
@@ -122,7 +175,7 @@ const planetColors: Record<string, string> = {
         <div class="flex flex-wrap items-center gap-6">
           <div class="flex items-center gap-4">
             <div class="w-14 h-14 rounded-full bg-[--color-terracotta]/10 flex items-center justify-center">
-              <span class="text-2xl">♀</span>
+              <span class="text-2xl">{planetSymbols[dashaData.balance.planet]}</span>
             </div>
             <div>
               <p class="text-2xl font-heading font-medium text-[--color-espresso]">{dashaData.balance.planet}</p>
@@ -146,43 +199,98 @@ const planetColors: Record<string, string> = {
         </div>
       </div>
 
-      <!-- Current Dasha Info -->
-      <div class="card p-6 mb-8 bg-gradient-to-r from-[--color-celestial-blue]/10 to-[--color-terracotta]/10 border-2 border-[--color-celestial-blue]/30">
-        <div class="flex items-center gap-2 mb-4">
+      <!-- Current Running Period - All 5 Levels -->
+      <div id="current" class="card p-6 mb-8 bg-gradient-to-r from-[--color-celestial-blue]/10 to-[--color-terracotta]/10 border-2 border-[--color-celestial-blue]/30">
+        <div class="flex items-center gap-2 mb-6">
           <div class="w-2 h-2 rounded-full bg-[--color-benefic] animate-pulse"></div>
-          <span class="text-sm font-semibold text-[--color-benefic]">Currently Running</span>
+          <span class="text-sm font-semibold text-[--color-benefic]">Currently Running - All 5 Levels</span>
         </div>
-        <div class="grid md:grid-cols-4 gap-6">
-          <div>
-            <p class="text-xs text-[--color-text-muted] mb-1">Mahadasha</p>
-            <div class="flex items-center gap-2">
-              <span class="text-xl">☽</span>
-              <span class="text-lg font-heading font-medium text-[--color-espresso]">Moon</span>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <!-- Mahadasha -->
+          <div class="p-4 rounded-lg bg-white/50 border border-[--color-border]">
+            <p class="text-xs text-[--color-text-muted] mb-2">1. Mahadasha</p>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-2xl" style={`color: ${planetColors[dashaData.currentPeriod.mahadasha.planet]}`}>
+                {planetSymbols[dashaData.currentPeriod.mahadasha.planet]}
+              </span>
+              <span class="text-lg font-heading font-medium text-[--color-espresso]">
+                {dashaData.currentPeriod.mahadasha.planet}
+              </span>
             </div>
-            <p class="text-xs text-[--color-text-secondary] mt-1">2016 - 2026</p>
+            <p class="text-xs text-[--color-text-secondary]">2016 - 2026</p>
+            <p class="text-xs text-[--color-text-muted] mt-1">10 years</p>
           </div>
-          <div>
-            <p class="text-xs text-[--color-text-muted] mb-1">Antardasha (Bhukti)</p>
-            <div class="flex items-center gap-2">
-              <span class="text-xl">♀</span>
-              <span class="text-lg font-heading font-medium text-[--color-espresso]">Venus</span>
+
+          <!-- Antardasha (Bhukti) -->
+          <div class="p-4 rounded-lg bg-white/50 border border-[--color-border]">
+            <p class="text-xs text-[--color-text-muted] mb-2">2. Bhukti (Antardasha)</p>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-2xl" style={`color: ${planetColors[dashaData.currentPeriod.antardasha.planet]}`}>
+                {planetSymbols[dashaData.currentPeriod.antardasha.planet]}
+              </span>
+              <span class="text-lg font-heading font-medium text-[--color-espresso]">
+                {dashaData.currentPeriod.antardasha.planet}
+              </span>
             </div>
-            <p class="text-xs text-[--color-text-secondary] mt-1">Dec 2023 - Aug 2025</p>
+            <p class="text-xs text-[--color-text-secondary]">Dec 2023 - Aug 2025</p>
+            <p class="text-xs text-[--color-text-muted] mt-1">1 year 8 months</p>
           </div>
-          <div>
-            <p class="text-xs text-[--color-text-muted] mb-1">Pratyantardasha</p>
-            <div class="flex items-center gap-2">
-              <span class="text-xl">♃</span>
-              <span class="text-lg font-heading font-medium text-[--color-espresso]">Jupiter</span>
+
+          <!-- Pratyantardasha -->
+          <div class="p-4 rounded-lg bg-white/50 border border-[--color-border]">
+            <p class="text-xs text-[--color-text-muted] mb-2">3. Pratyantardasha</p>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-2xl" style={`color: ${planetColors[dashaData.currentPeriod.pratyantardasha.planet]}`}>
+                {planetSymbols[dashaData.currentPeriod.pratyantardasha.planet]}
+              </span>
+              <span class="text-lg font-heading font-medium text-[--color-espresso]">
+                {dashaData.currentPeriod.pratyantardasha.planet}
+              </span>
             </div>
-            <p class="text-xs text-[--color-text-secondary] mt-1">Jan 2024 - May 2024</p>
+            <p class="text-xs text-[--color-text-secondary]">Jun - Sep 2024</p>
+            <p class="text-xs text-[--color-text-muted] mt-1">3 months 12 days</p>
           </div>
-          <div>
-            <p class="text-xs text-[--color-text-muted] mb-1">Period Significance</p>
-            <p class="text-sm text-[--color-text-secondary]">
-              Moon-Venus period favors relationships, creativity, and emotional fulfillment.
-            </p>
+
+          <!-- Sookshma Dasha -->
+          <div class="p-4 rounded-lg bg-white/50 border border-[--color-border]">
+            <p class="text-xs text-[--color-text-muted] mb-2">4. Sookshma Dasha</p>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-2xl" style={`color: ${planetColors[dashaData.currentPeriod.sookshmadasha.planet]}`}>
+                {planetSymbols[dashaData.currentPeriod.sookshmadasha.planet]}
+              </span>
+              <span class="text-lg font-heading font-medium text-[--color-espresso]">
+                {dashaData.currentPeriod.sookshmadasha.planet}
+              </span>
+            </div>
+            <p class="text-xs text-[--color-text-secondary]">Jul 15 - Aug 2</p>
+            <p class="text-xs text-[--color-text-muted] mt-1">18 days</p>
           </div>
+
+          <!-- Prana Dasha -->
+          <div class="p-4 rounded-lg bg-white/50 border border-[--color-celestial-blue]">
+            <p class="text-xs text-[--color-text-muted] mb-2">5. Prana Dasha</p>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-2xl" style={`color: ${planetColors[dashaData.currentPeriod.pranadasha.planet]}`}>
+                {planetSymbols[dashaData.currentPeriod.pranadasha.planet]}
+              </span>
+              <span class="text-lg font-heading font-medium text-[--color-espresso]">
+                {dashaData.currentPeriod.pranadasha.planet}
+              </span>
+            </div>
+            <p class="text-xs text-[--color-text-secondary]">Jul 20 - Jul 23</p>
+            <p class="text-xs text-[--color-text-muted] mt-1">3 days</p>
+          </div>
+        </div>
+
+        <!-- Period Interpretation -->
+        <div class="mt-6 p-4 rounded-lg bg-white/70 border border-[--color-border]">
+          <h4 class="font-heading text-sm font-medium text-[--color-espresso] mb-2">Current Period Interpretation</h4>
+          <p class="text-sm text-[--color-text-secondary]">
+            <strong>Moon-Venus-Jupiter-Saturn-Mercury</strong> period indicates a time for emotional fulfillment through relationships,
+            with wisdom guiding your decisions. Saturn's discipline combined with Mercury's intellect suggests careful planning
+            in financial matters. Good for creative pursuits, learning, and meaningful connections.
+          </p>
         </div>
       </div>
 
@@ -190,7 +298,6 @@ const planetColors: Record<string, string> = {
       <div class="card p-6 mb-8">
         <h2 class="font-heading text-lg text-[--color-espresso] mb-6">Mahadasha Timeline</h2>
         <div class="relative">
-          <!-- Timeline bar -->
           <div class="h-12 bg-[--color-linen] rounded-lg overflow-hidden flex">
             {dashaData.mahadashas.map((dasha) => (
               <div
@@ -199,15 +306,13 @@ const planetColors: Record<string, string> = {
                 title={`${dasha.planet}: ${dasha.start} to ${dasha.end}`}
               >
                 <span class="hidden sm:inline">{dasha.planet}</span>
-                <span class="sm:hidden">{dasha.symbol}</span>
+                <span class="sm:hidden">{planetSymbols[dasha.planet]}</span>
                 {dasha.current && (
                   <span class="absolute -top-1 right-1 w-2 h-2 bg-white rounded-full animate-pulse"></span>
                 )}
               </div>
             ))}
           </div>
-
-          <!-- Years markers -->
           <div class="flex justify-between mt-2 text-xs text-[--color-text-muted]">
             <span>1990</span>
             <span>2010</span>
@@ -217,20 +322,78 @@ const planetColors: Record<string, string> = {
         </div>
       </div>
 
-      <!-- Detailed Dasha List -->
-      <div class="space-y-6">
+      <!-- Dasha Hierarchy Reference -->
+      <div class="card p-6 mb-8">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">Vimshottari Dasha Hierarchy</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-[--color-linen]">
+              <tr>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Level</th>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Name</th>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Also Known As</th>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Duration Range</th>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Purpose</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[--color-border]">
+              <tr class="bg-white">
+                <td class="px-4 py-3"><span class="house-badge">1</span></td>
+                <td class="px-4 py-3 font-medium text-[--color-espresso]">Mahadasha</td>
+                <td class="px-4 py-3 text-[--color-text-secondary]">Major Period</td>
+                <td class="px-4 py-3">6 - 20 years</td>
+                <td class="px-4 py-3 text-[--color-text-secondary]">Overall life theme</td>
+              </tr>
+              <tr class="bg-[--color-pearl]">
+                <td class="px-4 py-3"><span class="house-badge">2</span></td>
+                <td class="px-4 py-3 font-medium text-[--color-espresso]">Antardasha</td>
+                <td class="px-4 py-3 text-[--color-text-secondary]">Bhukti / Sub-period</td>
+                <td class="px-4 py-3">3 months - 3 years</td>
+                <td class="px-4 py-3 text-[--color-text-secondary]">Modifies main period</td>
+              </tr>
+              <tr class="bg-white">
+                <td class="px-4 py-3"><span class="house-badge">3</span></td>
+                <td class="px-4 py-3 font-medium text-[--color-espresso]">Pratyantardasha</td>
+                <td class="px-4 py-3 text-[--color-text-secondary]">Sub-sub period</td>
+                <td class="px-4 py-3">1 week - 3 months</td>
+                <td class="px-4 py-3 text-[--color-text-secondary]">Specific timing</td>
+              </tr>
+              <tr class="bg-[--color-pearl]">
+                <td class="px-4 py-3"><span class="house-badge">4</span></td>
+                <td class="px-4 py-3 font-medium text-[--color-espresso]">Sookshma Dasha</td>
+                <td class="px-4 py-3 text-[--color-text-secondary]">Micro period</td>
+                <td class="px-4 py-3">1 - 20 days</td>
+                <td class="px-4 py-3 text-[--color-text-secondary]">Fine-tuned events</td>
+              </tr>
+              <tr class="bg-white">
+                <td class="px-4 py-3"><span class="house-badge">5</span></td>
+                <td class="px-4 py-3 font-medium text-[--color-espresso]">Prana Dasha</td>
+                <td class="px-4 py-3 text-[--color-text-secondary]">Breath period</td>
+                <td class="px-4 py-3">Few hours - 3 days</td>
+                <td class="px-4 py-3 text-[--color-text-secondary]">Exact timing</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detailed Dasha List with Nested Levels -->
+      <div id="mahadashas" class="space-y-6">
+        <h2 class="font-heading text-xl text-[--color-espresso]">Detailed Dasha Periods</h2>
+
         {dashaData.mahadashas.map((dasha) => (
           <div class={`card overflow-hidden ${dasha.current ? 'ring-2 ring-[--color-celestial-blue]' : ''}`}>
             <div
-              class="p-4 flex items-center justify-between"
+              class="p-4 flex items-center justify-between cursor-pointer mahadasha-header"
               style={`background: linear-gradient(90deg, ${planetColors[dasha.planet]}15, transparent)`}
+              data-planet={dasha.planet}
             >
               <div class="flex items-center gap-4">
                 <div
                   class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl"
                   style={`background-color: ${planetColors[dasha.planet]}`}
                 >
-                  {dasha.symbol}
+                  {planetSymbols[dasha.planet]}
                 </div>
                 <div>
                   <div class="flex items-center gap-2">
@@ -244,41 +407,113 @@ const planetColors: Record<string, string> = {
                     )}
                   </div>
                   <p class="text-sm text-[--color-text-secondary]">
-                    {dasha.years} years • {dasha.start} to {dasha.end}
+                    {dasha.years} years | {dasha.start} to {dasha.end}
                   </p>
                 </div>
               </div>
-              <button class="btn btn-ghost text-sm dasha-toggle" data-planet={dasha.planet}>
-                <svg class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="flex items-center gap-4">
+                <div class="hidden md:block text-right">
+                  <p class="text-xs text-[--color-text-muted]">{dashaMeanings[dasha.planet].theme}</p>
+                </div>
+                <svg class="w-5 h-5 transition-transform mahadasha-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
-              </button>
+              </div>
             </div>
 
             {dasha.antardashas.length > 0 && (
-              <div class="p-4 border-t border-[--color-border] hidden dasha-content" data-planet={dasha.planet}>
-                <h4 class="text-sm font-semibold text-[--color-espresso] mb-3">Antardasha (Bhukti) Periods</h4>
-                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {dasha.antardashas.map((antardasha) => (
-                    <div
-                      class={`p-3 rounded-lg border ${antardasha.current ? 'bg-[--color-celestial-blue]/10 border-[--color-celestial-blue]' : 'bg-[--color-pearl] border-[--color-border]'}`}
-                    >
-                      <div class="flex items-center justify-between mb-1">
-                        <span class="font-medium text-[--color-espresso]">{antardasha.planet}</span>
-                        {antardasha.current && (
-                          <span class="w-2 h-2 bg-[--color-benefic] rounded-full animate-pulse"></span>
+              <div class="hidden mahadasha-content border-t border-[--color-border]" data-planet={dasha.planet}>
+                <div class="p-4">
+                  <h4 class="text-sm font-semibold text-[--color-espresso] mb-4">Antardasha (Bhukti) Periods</h4>
+                  <div class="space-y-3">
+                    {dasha.antardashas.map((antardasha: any) => (
+                      <div class={`rounded-lg border ${antardasha.current ? 'border-[--color-celestial-blue] bg-[--color-celestial-blue]/5' : 'border-[--color-border] bg-[--color-pearl]'}`}>
+                        <div class="p-3 flex items-center justify-between cursor-pointer antardasha-header" data-key={`${dasha.planet}-${antardasha.planet}`}>
+                          <div class="flex items-center gap-3">
+                            <span class="text-lg" style={`color: ${planetColors[antardasha.planet]}`}>
+                              {planetSymbols[antardasha.planet]}
+                            </span>
+                            <div>
+                              <span class="font-medium text-[--color-espresso]">{antardasha.planet}</span>
+                              {antardasha.current && (
+                                <span class="ml-2 w-2 h-2 bg-[--color-benefic] rounded-full inline-block animate-pulse"></span>
+                              )}
+                              <p class="text-xs text-[--color-text-muted]">
+                                {antardasha.start} - {antardasha.end} ({antardasha.duration})
+                              </p>
+                            </div>
+                          </div>
+                          {antardasha.pratyantardashas && (
+                            <svg class="w-4 h-4 transition-transform antardasha-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                          )}
+                        </div>
+
+                        {antardasha.pratyantardashas && (
+                          <div class="hidden antardasha-content border-t border-[--color-border] bg-white/50" data-key={`${dasha.planet}-${antardasha.planet}`}>
+                            <div class="p-3">
+                              <h5 class="text-xs font-semibold text-[--color-text-muted] mb-2">Pratyantardasha Periods</h5>
+                              <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                {antardasha.pratyantardashas.map((pratyantar: any) => (
+                                  <div class={`p-2 rounded text-xs ${pratyantar.current ? 'bg-[--color-celestial-blue]/10 border border-[--color-celestial-blue]' : 'bg-[--color-linen]'}`}>
+                                    <div class="flex items-center gap-1 mb-1">
+                                      <span style={`color: ${planetColors[pratyantar.planet]}`}>{planetSymbols[pratyantar.planet]}</span>
+                                      <span class="font-medium">{pratyantar.planet}</span>
+                                      {pratyantar.current && <span class="w-1.5 h-1.5 bg-[--color-benefic] rounded-full animate-pulse"></span>}
+                                    </div>
+                                    <p class="text-[--color-text-muted]">{pratyantar.duration}</p>
+
+                                    {pratyantar.sookshmadashas && (
+                                      <div class="mt-2 pt-2 border-t border-[--color-border]">
+                                        <p class="text-[10px] font-semibold text-[--color-text-muted] mb-1">Sookshma</p>
+                                        <div class="space-y-1">
+                                          {pratyantar.sookshmadashas.slice(0, 3).map((sookshma: any) => (
+                                            <div class={`flex items-center gap-1 ${sookshma.current ? 'text-[--color-celestial-blue] font-medium' : ''}`}>
+                                              <span class="text-[10px]">{planetSymbols[sookshma.planet]}</span>
+                                              <span class="text-[10px]">{sookshma.planet}</span>
+                                              {sookshma.current && <span class="w-1 h-1 bg-[--color-benefic] rounded-full"></span>}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
                         )}
                       </div>
-                      <p class="text-xs text-[--color-text-muted]">
-                        {antardasha.start} - {antardasha.end}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
           </div>
         ))}
+      </div>
+
+      <!-- Planet Period Meanings -->
+      <div class="mt-8 card p-6">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-6">Dasha Period Themes</h2>
+        <div class="grid md:grid-cols-3 gap-4">
+          {Object.entries(dashaMeanings).map(([planet, meaning]) => (
+            <div class="p-4 rounded-lg bg-[--color-pearl] border border-[--color-border]">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl" style={`color: ${planetColors[planet]}`}>{planetSymbols[planet]}</span>
+                <span class="font-heading font-medium text-[--color-espresso]">{planet}</span>
+                <span class="text-xs text-[--color-text-muted]">({dashaYears[planet]} years)</span>
+              </div>
+              <p class="text-sm text-[--color-text-secondary] mb-2">{meaning.theme}</p>
+              <div class="flex flex-wrap gap-1">
+                {meaning.keywords.map((keyword) => (
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-[--color-linen] text-[--color-text-muted]">{keyword}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <!-- Info Box -->
@@ -287,22 +522,22 @@ const planetColors: Record<string, string> = {
         <div class="grid md:grid-cols-2 gap-6 text-sm text-[--color-text-secondary]">
           <div>
             <p class="mb-3">
-              <strong class="text-[--color-espresso]">Mahadasha</strong> is the major planetary period
-              that sets the overall theme for that time in your life. Each planet rules for a specific number of years.
+              <strong class="text-[--color-espresso]">Vimshottari</strong> means "120 years" - the total cycle of all 9 planetary periods.
+              Each planet rules for a specific duration based on its nature and the Moon's nakshatra at birth.
             </p>
             <p>
-              <strong class="text-[--color-espresso]">Antardasha (Bhukti)</strong> is the sub-period within
-              a Mahadasha that modifies and refines the effects of the major period.
+              <strong class="text-[--color-espresso]">KP Method</strong> enhances traditional dasha analysis by considering
+              the planet's star lord, sub lord, and house significators for precise event timing.
             </p>
           </div>
           <div>
             <p class="mb-3">
-              <strong class="text-[--color-espresso]">Pratyantardasha</strong> further divides the Antardasha
-              for more precise timing of events.
+              <strong class="text-[--color-espresso]">Nested Periods</strong> work like zooming in - Mahadasha sets the theme,
+              Antardasha refines it, and deeper levels provide exact timing for events.
             </p>
             <p>
-              In KP Astrology, the Dasha system combined with <strong class="text-[--color-espresso]">significator analysis</strong>
-              helps pinpoint exact timing of life events with remarkable accuracy.
+              For major life events, check when multiple dasha levels align with the relevant house significators.
+              This creates "Dasha Sandhi" - critical transition points.
             </p>
           </div>
         </div>
@@ -314,25 +549,44 @@ const planetColors: Record<string, string> = {
 </Layout>
 
 <script>
-  // Toggle dasha content
-  const toggleBtns = document.querySelectorAll('.dasha-toggle');
-
-  toggleBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const planet = btn.getAttribute('data-planet');
-      const content = document.querySelector(`.dasha-content[data-planet="${planet}"]`);
-      const icon = btn.querySelector('svg');
+  // Mahadasha toggle
+  document.querySelectorAll('.mahadasha-header').forEach((header) => {
+    header.addEventListener('click', () => {
+      const planet = header.getAttribute('data-planet');
+      const content = document.querySelector(`.mahadasha-content[data-planet="${planet}"]`);
+      const icon = header.querySelector('.mahadasha-icon');
 
       content?.classList.toggle('hidden');
       icon?.classList.toggle('rotate-180');
     });
   });
 
+  // Antardasha toggle
+  document.querySelectorAll('.antardasha-header').forEach((header) => {
+    header.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = header.getAttribute('data-key');
+      const content = document.querySelector(`.antardasha-content[data-key="${key}"]`);
+      const icon = header.querySelector('.antardasha-icon');
+
+      content?.classList.toggle('hidden');
+      icon?.classList.toggle('rotate-90');
+    });
+  });
+
   // Auto-expand current dasha
-  const currentDasha = document.querySelector('.dasha-content[data-planet="Moon"]');
-  const currentToggle = document.querySelector('.dasha-toggle[data-planet="Moon"]');
-  if (currentDasha && currentToggle) {
-    currentDasha.classList.remove('hidden');
-    currentToggle.querySelector('svg')?.classList.add('rotate-180');
+  const currentMahadasha = document.querySelector('.mahadasha-content[data-planet="Moon"]');
+  const currentMahadashaHeader = document.querySelector('.mahadasha-header[data-planet="Moon"]');
+  if (currentMahadasha && currentMahadashaHeader) {
+    currentMahadasha.classList.remove('hidden');
+    currentMahadashaHeader.querySelector('.mahadasha-icon')?.classList.add('rotate-180');
+  }
+
+  // Auto-expand current antardasha
+  const currentAntardasha = document.querySelector('.antardasha-content[data-key="Moon-Venus"]');
+  const currentAntardashaHeader = document.querySelector('.antardasha-header[data-key="Moon-Venus"]');
+  if (currentAntardasha && currentAntardashaHeader) {
+    currentAntardasha.classList.remove('hidden');
+    currentAntardashaHeader.querySelector('.antardasha-icon')?.classList.add('rotate-90');
   }
 </script>

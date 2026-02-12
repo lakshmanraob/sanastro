@@ -1,0 +1,395 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+
+// Planet symbols and colors
+const planetSymbols: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mars: '♂', Mercury: '☿', Jupiter: '♃',
+  Venus: '♀', Saturn: '♄', Rahu: '☊', Ketu: '☋'
+};
+
+const planetColors: Record<string, string> = {
+  Sun: 'var(--color-golden-hour)',
+  Moon: 'var(--color-celestial-blue)',
+  Mars: 'var(--color-malefic)',
+  Mercury: 'var(--color-sage)',
+  Jupiter: 'var(--color-benefic)',
+  Venus: 'var(--color-terracotta)',
+  Saturn: 'var(--color-neutral)',
+  Rahu: 'var(--color-taupe)',
+  Ketu: 'var(--color-dusty-rose)',
+};
+
+// Sample Prashna data (would be calculated based on current time)
+const prashnaData = {
+  questionTime: new Date().toISOString(),
+  rulingPlanets: {
+    dayLord: 'Saturn',
+    moonSignLord: 'Venus',
+    moonStarLord: 'Rahu',
+    lagnaSignLord: 'Mercury',
+    lagnaStarLord: 'Mars',
+  },
+  ascendant: {
+    sign: 'Gemini',
+    degree: '15°23\'45"',
+    nakshatra: 'Ardra',
+    nakshatraLord: 'Rahu',
+    subLord: 'Venus',
+  },
+  moonPosition: {
+    sign: 'Taurus',
+    degree: '22°45\'12"',
+    nakshatra: 'Rohini',
+    nakshatraLord: 'Moon',
+    subLord: 'Saturn',
+  },
+  questionCategories: [
+    { id: 'general', label: 'General Query', icon: '❓', houses: [1, 6, 10] },
+    { id: 'marriage', label: 'Marriage/Relationship', icon: '💍', houses: [2, 7, 11] },
+    { id: 'career', label: 'Career/Job', icon: '💼', houses: [2, 6, 10] },
+    { id: 'finance', label: 'Finance/Money', icon: '💰', houses: [2, 6, 11] },
+    { id: 'health', label: 'Health', icon: '🏥', houses: [1, 6, 8] },
+    { id: 'travel', label: 'Travel/Journey', icon: '✈️', houses: [3, 9, 12] },
+    { id: 'education', label: 'Education/Exam', icon: '📚', houses: [4, 9, 11] },
+    { id: 'property', label: 'Property/Land', icon: '🏠', houses: [4, 11, 12] },
+    { id: 'litigation', label: 'Legal Matters', icon: '⚖️', houses: [6, 7, 12] },
+    { id: 'missing', label: 'Lost/Missing', icon: '🔍', houses: [2, 6, 11] },
+  ],
+};
+
+// Ruling planets interpretation
+const rulingPlanetMeanings: Record<string, string> = {
+  Sun: 'Government, authority, father, health matters',
+  Moon: 'Mind, mother, public, travel, emotions',
+  Mars: 'Energy, courage, property, siblings, surgery',
+  Mercury: 'Communication, business, education, skills',
+  Jupiter: 'Wisdom, teacher, children, fortune, spirituality',
+  Venus: 'Relationships, marriage, arts, luxury, vehicles',
+  Saturn: 'Career, discipline, delays, longevity, hard work',
+  Rahu: 'Foreign, unconventional, technology, sudden events',
+  Ketu: 'Spirituality, past karma, liberation, occult',
+};
+---
+
+<Layout title="Prashna Shastra - KP Horary Astrology">
+  <Navigation currentPath="/prashna" />
+
+  <main class="pt-20 min-h-screen bg-[--color-cream]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="font-heading text-3xl text-[--color-espresso] mb-2">Prashna Shastra (KP Horary)</h1>
+        <p class="text-[--color-text-secondary]">
+          Answer questions based on the moment of query using KP Astrology principles.
+          The chart is cast for the exact moment when the question arises in your mind.
+        </p>
+      </div>
+
+      <!-- Current Moment Info -->
+      <div class="card p-6 mb-8 bg-gradient-to-r from-[--color-golden-hour]/10 to-[--color-celestial-blue]/10 border-2 border-[--color-golden-hour]/30">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-2 h-2 rounded-full bg-[--color-golden-hour] animate-pulse"></div>
+          <span class="text-sm font-semibold text-[--color-golden-hour]">Live Prashna Moment</span>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6">
+          <div>
+            <p class="text-xs text-[--color-text-muted] mb-1">Query Time</p>
+            <p class="text-lg font-heading font-medium text-[--color-espresso]" id="current-time">
+              Loading...
+            </p>
+            <p class="text-xs text-[--color-text-secondary]" id="current-date">Loading...</p>
+          </div>
+          <div>
+            <p class="text-xs text-[--color-text-muted] mb-1">Ascendant (Lagna)</p>
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-heading font-medium text-[--color-espresso]">{prashnaData.ascendant.sign}</span>
+              <span class="text-sm text-[--color-text-secondary]">{prashnaData.ascendant.degree}</span>
+            </div>
+            <p class="text-xs text-[--color-text-secondary]">{prashnaData.ascendant.nakshatra} - {prashnaData.ascendant.subLord} Sub</p>
+          </div>
+          <div>
+            <p class="text-xs text-[--color-text-muted] mb-1">Moon Position</p>
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-heading font-medium text-[--color-espresso]">{prashnaData.moonPosition.sign}</span>
+              <span class="text-sm text-[--color-text-secondary]">{prashnaData.moonPosition.degree}</span>
+            </div>
+            <p class="text-xs text-[--color-text-secondary]">{prashnaData.moonPosition.nakshatra} - {prashnaData.moonPosition.subLord} Sub</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ruling Planets -->
+      <div class="card p-6 mb-8">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">Ruling Planets at Query Time</h2>
+        <p class="text-sm text-[--color-text-secondary] mb-6">
+          In KP Prashna, ruling planets indicate the significators that will be active.
+          If a planet appears multiple times, it gains strength as a significator.
+        </p>
+
+        <div class="grid md:grid-cols-5 gap-4 mb-6">
+          <div class="p-4 rounded-lg bg-[--color-linen] border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-2">Day Lord</p>
+            <span class="text-2xl" style={`color: ${planetColors[prashnaData.rulingPlanets.dayLord]}`}>
+              {planetSymbols[prashnaData.rulingPlanets.dayLord]}
+            </span>
+            <p class="font-medium text-[--color-espresso] mt-1">{prashnaData.rulingPlanets.dayLord}</p>
+          </div>
+          <div class="p-4 rounded-lg bg-[--color-linen] border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-2">Moon Sign Lord</p>
+            <span class="text-2xl" style={`color: ${planetColors[prashnaData.rulingPlanets.moonSignLord]}`}>
+              {planetSymbols[prashnaData.rulingPlanets.moonSignLord]}
+            </span>
+            <p class="font-medium text-[--color-espresso] mt-1">{prashnaData.rulingPlanets.moonSignLord}</p>
+          </div>
+          <div class="p-4 rounded-lg bg-[--color-linen] border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-2">Moon Star Lord</p>
+            <span class="text-2xl" style={`color: ${planetColors[prashnaData.rulingPlanets.moonStarLord]}`}>
+              {planetSymbols[prashnaData.rulingPlanets.moonStarLord]}
+            </span>
+            <p class="font-medium text-[--color-espresso] mt-1">{prashnaData.rulingPlanets.moonStarLord}</p>
+          </div>
+          <div class="p-4 rounded-lg bg-[--color-linen] border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-2">Lagna Sign Lord</p>
+            <span class="text-2xl" style={`color: ${planetColors[prashnaData.rulingPlanets.lagnaSignLord]}`}>
+              {planetSymbols[prashnaData.rulingPlanets.lagnaSignLord]}
+            </span>
+            <p class="font-medium text-[--color-espresso] mt-1">{prashnaData.rulingPlanets.lagnaSignLord}</p>
+          </div>
+          <div class="p-4 rounded-lg bg-[--color-linen] border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-2">Lagna Star Lord</p>
+            <span class="text-2xl" style={`color: ${planetColors[prashnaData.rulingPlanets.lagnaStarLord]}`}>
+              {planetSymbols[prashnaData.rulingPlanets.lagnaStarLord]}
+            </span>
+            <p class="font-medium text-[--color-espresso] mt-1">{prashnaData.rulingPlanets.lagnaStarLord}</p>
+          </div>
+        </div>
+
+        <!-- Ruling Planets Summary -->
+        <div class="p-4 rounded-lg bg-[--color-pearl] border border-[--color-border]">
+          <h4 class="text-sm font-semibold text-[--color-espresso] mb-2">Ruling Planets Summary</h4>
+          <div class="flex flex-wrap gap-2">
+            {Object.values(prashnaData.rulingPlanets).filter((planet, index, self) => self.indexOf(planet) === index).map((planet) => (
+              <span class="px-3 py-1 rounded-full text-sm font-medium" style={`background-color: ${planetColors[planet]}20; color: ${planetColors[planet]}`}>
+                {planetSymbols[planet]} {planet}
+              </span>
+            ))}
+          </div>
+          <p class="text-xs text-[--color-text-muted] mt-3">
+            These planets are active for your query. Events will manifest through these significators.
+          </p>
+        </div>
+      </div>
+
+      <!-- Question Categories -->
+      <div class="card p-6 mb-8">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">Select Your Question Category</h2>
+        <p class="text-sm text-[--color-text-secondary] mb-6">
+          Choose the category that best matches your question. Each category has specific houses to analyze.
+        </p>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {prashnaData.questionCategories.map((category) => (
+            <button class="question-category p-4 rounded-lg border-2 border-[--color-border] hover:border-[--color-terracotta] transition-all text-center group" data-category={category.id}>
+              <span class="text-2xl block mb-2">{category.icon}</span>
+              <p class="text-sm font-medium text-[--color-espresso] group-hover:text-[--color-terracotta]">{category.label}</p>
+              <div class="flex justify-center gap-1 mt-2">
+                {category.houses.map((house) => (
+                  <span class="house-badge text-xs">{house}</span>
+                ))}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <!-- Prashna Analysis (Sample) -->
+      <div class="card p-6 mb-8" id="prashna-result">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">Prashna Analysis</h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- Key Factors -->
+          <div>
+            <h3 class="text-sm font-semibold text-[--color-espresso] mb-3">Key Analysis Factors</h3>
+            <div class="space-y-3">
+              <div class="p-3 rounded-lg bg-[--color-linen]">
+                <p class="text-xs text-[--color-text-muted]">Ascendant Sub Lord</p>
+                <p class="font-medium text-[--color-espresso]">{prashnaData.ascendant.subLord}</p>
+                <p class="text-xs text-[--color-text-secondary]">Signifies: {rulingPlanetMeanings[prashnaData.ascendant.subLord]}</p>
+              </div>
+              <div class="p-3 rounded-lg bg-[--color-linen]">
+                <p class="text-xs text-[--color-text-muted]">Moon's Sub Lord</p>
+                <p class="font-medium text-[--color-espresso]">{prashnaData.moonPosition.subLord}</p>
+                <p class="text-xs text-[--color-text-secondary]">Signifies: {rulingPlanetMeanings[prashnaData.moonPosition.subLord]}</p>
+              </div>
+              <div class="p-3 rounded-lg bg-[--color-linen]">
+                <p class="text-xs text-[--color-text-muted]">Query Time Star Lord</p>
+                <p class="font-medium text-[--color-espresso]">{prashnaData.ascendant.nakshatraLord}</p>
+                <p class="text-xs text-[--color-text-secondary]">Signifies: {rulingPlanetMeanings[prashnaData.ascendant.nakshatraLord]}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preliminary Indication -->
+          <div>
+            <h3 class="text-sm font-semibold text-[--color-espresso] mb-3">Preliminary Indication</h3>
+            <div class="p-4 rounded-lg bg-[--color-benefic]/10 border border-[--color-benefic]/30">
+              <div class="flex items-center gap-2 mb-2">
+                <svg class="w-5 h-5 text-[--color-benefic]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="font-medium text-[--color-benefic]">Positive Indication</span>
+              </div>
+              <p class="text-sm text-[--color-text-secondary]">
+                Based on the ruling planets and sub lord analysis, the query shows favorable indications.
+                Select a specific question category above for detailed analysis.
+              </p>
+            </div>
+
+            <div class="mt-4 p-4 rounded-lg bg-[--color-pearl] border border-[--color-border]">
+              <h4 class="text-xs font-semibold text-[--color-text-muted] mb-2">KP Prashna Principle</h4>
+              <p class="text-xs text-[--color-text-secondary]">
+                For any event to fructify, the sub lord of the relevant house cusp should be:
+                <br/>• Signifier of the houses related to the matter
+                <br/>• Not negated by 6, 8, 12 houses (for positive outcomes)
+                <br/>• Connected to ruling planets at the time of query
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prashna Guidelines -->
+      <div class="card p-6 mb-8">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">How to Ask a Prashna</h2>
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="text-center">
+            <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-[--color-terracotta]/10 flex items-center justify-center">
+              <span class="text-xl">🧘</span>
+            </div>
+            <h3 class="font-medium text-[--color-espresso] mb-2">1. Clear Mind</h3>
+            <p class="text-sm text-[--color-text-secondary]">
+              Focus on your question with a calm mind. The moment of sincere query captures the cosmic answer.
+            </p>
+          </div>
+          <div class="text-center">
+            <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-[--color-celestial-blue]/10 flex items-center justify-center">
+              <span class="text-xl">❓</span>
+            </div>
+            <h3 class="font-medium text-[--color-espresso] mb-2">2. Single Question</h3>
+            <p class="text-sm text-[--color-text-secondary]">
+              Ask one clear question at a time. Compound questions confuse the analysis.
+            </p>
+          </div>
+          <div class="text-center">
+            <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-[--color-benefic]/10 flex items-center justify-center">
+              <span class="text-xl">⏰</span>
+            </div>
+            <h3 class="font-medium text-[--color-espresso] mb-2">3. Timing Matters</h3>
+            <p class="text-sm text-[--color-text-secondary]">
+              The exact moment when the question arises genuinely is captured. Don't repeat the same question.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- KP Prashna vs Traditional -->
+      <div class="p-6 rounded-lg bg-[--color-warm-sand] border border-[--color-border]">
+        <h3 class="font-heading text-lg text-[--color-espresso] mb-3">KP Prashna vs Traditional Horary</h3>
+        <div class="grid md:grid-cols-2 gap-6 text-sm text-[--color-text-secondary]">
+          <div>
+            <h4 class="font-medium text-[--color-espresso] mb-2">KP System Advantages</h4>
+            <ul class="space-y-2">
+              <li class="flex items-start gap-2">
+                <span class="text-[--color-benefic]">✓</span>
+                Uses sub lord for precise timing
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-[--color-benefic]">✓</span>
+                Ruling planets verify the answer
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-[--color-benefic]">✓</span>
+                Clear yes/no determinations possible
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-[--color-benefic]">✓</span>
+                Significator-based approach is objective
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-medium text-[--color-espresso] mb-2">Key Principles</h4>
+            <ul class="space-y-2">
+              <li class="flex items-start gap-2">
+                <span class="text-[--color-terracotta]">→</span>
+                Sub lord decides the result (not sign or star lord)
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-[--color-terracotta]">→</span>
+                Ruling planets at query time are active significators
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-[--color-terracotta]">→</span>
+                Event timing through Dasha-Bhukti of significators
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-[--color-terracotta]">→</span>
+                Transit confirmation required for accuracy
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  // Update current time
+  function updateTime() {
+    const now = new Date();
+    const timeEl = document.getElementById('current-time');
+    const dateEl = document.getElementById('current-date');
+
+    if (timeEl) {
+      timeEl.textContent = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+    }
+
+    if (dateEl) {
+      dateEl.textContent = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+  }
+
+  updateTime();
+  setInterval(updateTime, 1000);
+
+  // Question category selection
+  document.querySelectorAll('.question-category').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      // Remove active state from all
+      document.querySelectorAll('.question-category').forEach((b) => {
+        b.classList.remove('border-[--color-terracotta]', 'bg-[--color-terracotta]/5');
+      });
+
+      // Add active state
+      btn.classList.add('border-[--color-terracotta]', 'bg-[--color-terracotta]/5');
+
+      // Scroll to result
+      document.getElementById('prashna-result')?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>

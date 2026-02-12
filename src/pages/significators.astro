@@ -1,0 +1,424 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+
+// Planet data
+const planetSymbols: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mars: '♂', Mercury: '☿', Jupiter: '♃',
+  Venus: '♀', Saturn: '♄', Rahu: '☊', Ketu: '☋'
+};
+
+const planetColors: Record<string, string> = {
+  Sun: 'var(--color-golden-hour)',
+  Moon: 'var(--color-celestial-blue)',
+  Mars: 'var(--color-malefic)',
+  Mercury: 'var(--color-sage)',
+  Jupiter: 'var(--color-benefic)',
+  Venus: 'var(--color-terracotta)',
+  Saturn: 'var(--color-neutral)',
+  Rahu: 'var(--color-taupe)',
+  Ketu: 'var(--color-dusty-rose)',
+};
+
+// 4-Fold Significator System Data
+const planetSignificators = [
+  {
+    planet: 'Sun',
+    occupies: { house: 10, sign: 'Capricorn' },
+    owns: [5],
+    starLordOf: [1, 9],
+    positionedInStarOf: 'Sun',
+    subLord: 'Venus',
+    totalSignification: [1, 5, 9, 10],
+    strength: 'Strong',
+    nature: 'Benefic for Aries Ascendant',
+  },
+  {
+    planet: 'Moon',
+    occupies: { house: 5, sign: 'Leo' },
+    owns: [4],
+    starLordOf: [2, 11],
+    positionedInStarOf: 'Ketu',
+    subLord: 'Mars',
+    totalSignification: [2, 4, 5, 11],
+    strength: 'Medium',
+    nature: 'Neutral',
+  },
+  {
+    planet: 'Mars',
+    occupies: { house: 2, sign: 'Taurus' },
+    owns: [1, 8],
+    starLordOf: [3, 5, 12],
+    positionedInStarOf: 'Moon',
+    subLord: 'Jupiter',
+    totalSignification: [1, 2, 3, 5, 8, 12],
+    strength: 'Strong',
+    nature: 'Ascendant Lord - Most Benefic',
+  },
+  {
+    planet: 'Mercury',
+    occupies: { house: 10, sign: 'Capricorn' },
+    owns: [3, 6],
+    starLordOf: [4, 7, 10],
+    positionedInStarOf: 'Moon',
+    subLord: 'Saturn',
+    totalSignification: [3, 4, 6, 7, 10],
+    strength: 'Strong',
+    nature: 'Functional Malefic (6th lord)',
+    retrograde: true,
+  },
+  {
+    planet: 'Jupiter',
+    occupies: { house: 11, sign: 'Aquarius' },
+    owns: [9, 12],
+    starLordOf: [1, 6, 8],
+    positionedInStarOf: 'Mars',
+    subLord: 'Rahu',
+    totalSignification: [1, 6, 8, 9, 11, 12],
+    strength: 'Strong',
+    nature: 'Great Benefic (9th lord)',
+  },
+  {
+    planet: 'Venus',
+    occupies: { house: 11, sign: 'Aquarius' },
+    owns: [2, 7],
+    starLordOf: [1, 6, 12],
+    positionedInStarOf: 'Rahu',
+    subLord: 'Mercury',
+    totalSignification: [1, 2, 6, 7, 11, 12],
+    strength: 'Strong',
+    nature: 'Maraka (2, 7 lord) but Yogakaraka effects',
+  },
+  {
+    planet: 'Saturn',
+    occupies: { house: 7, sign: 'Libra' },
+    owns: [10, 11],
+    starLordOf: [2, 4, 9],
+    positionedInStarOf: 'Rahu',
+    subLord: 'Venus',
+    totalSignification: [2, 4, 7, 9, 10, 11],
+    strength: 'Exalted',
+    nature: 'Yogakaraka (10, 11 lord)',
+    retrograde: true,
+  },
+  {
+    planet: 'Rahu',
+    occupies: { house: 4, sign: 'Cancer' },
+    owns: [],
+    starLordOf: [7, 10, 11],
+    positionedInStarOf: 'Saturn',
+    subLord: 'Moon',
+    totalSignification: [4, 7, 10, 11],
+    strength: 'Strong in Kendra',
+    nature: 'Acts like Moon (sign lord)',
+  },
+  {
+    planet: 'Ketu',
+    occupies: { house: 10, sign: 'Capricorn' },
+    owns: [],
+    starLordOf: [5, 9],
+    positionedInStarOf: 'Sun',
+    subLord: 'Mercury',
+    totalSignification: [5, 9, 10],
+    strength: 'Medium',
+    nature: 'Acts like Saturn (sign lord)',
+  },
+];
+
+// House Significators (planets signifying each house)
+const houseSignificators = [
+  { house: 1, significators: ['Mars', 'Jupiter', 'Venus'], cuspSubLord: 'Saturn', cuspDegree: '15°23\'45"', sign: 'Aries' },
+  { house: 2, significators: ['Mars', 'Saturn', 'Moon'], cuspSubLord: 'Mercury', cuspDegree: '12°45\'12"', sign: 'Taurus' },
+  { house: 3, significators: ['Mercury', 'Mars'], cuspSubLord: 'Venus', cuspDegree: '08°12\'30"', sign: 'Gemini' },
+  { house: 4, significators: ['Rahu', 'Moon', 'Saturn'], cuspSubLord: 'Moon', cuspDegree: '05°34\'18"', sign: 'Cancer' },
+  { house: 5, significators: ['Moon', 'Mars', 'Ketu'], cuspSubLord: 'Sun', cuspDegree: '06°45\'22"', sign: 'Leo' },
+  { house: 6, significators: ['Jupiter', 'Venus', 'Mercury'], cuspSubLord: 'Mars', cuspDegree: '10°23\'45"', sign: 'Virgo' },
+  { house: 7, significators: ['Saturn', 'Mercury', 'Rahu'], cuspSubLord: 'Jupiter', cuspDegree: '15°23\'45"', sign: 'Libra' },
+  { house: 8, significators: ['Mars', 'Jupiter'], cuspSubLord: 'Mercury', cuspDegree: '12°45\'12"', sign: 'Scorpio' },
+  { house: 9, significators: ['Saturn', 'Ketu', 'Sun'], cuspSubLord: 'Venus', cuspDegree: '08°12\'30"', sign: 'Sagittarius' },
+  { house: 10, significators: ['Sun', 'Mercury', 'Ketu', 'Saturn'], cuspSubLord: 'Moon', cuspDegree: '05°34\'18"', sign: 'Capricorn' },
+  { house: 11, significators: ['Jupiter', 'Venus', 'Saturn', 'Rahu'], cuspSubLord: 'Rahu', cuspDegree: '06°45\'22"', sign: 'Aquarius' },
+  { house: 12, significators: ['Jupiter', 'Venus', 'Mars'], cuspSubLord: 'Saturn', cuspDegree: '10°23\'45"', sign: 'Pisces' },
+];
+
+// House meanings for KP
+const houseMeanings = {
+  1: ['Self', 'Body', 'Personality', 'Health', 'Appearance'],
+  2: ['Wealth', 'Family', 'Speech', 'Food', 'Death (Maraka)'],
+  3: ['Siblings', 'Courage', 'Short Travel', 'Communication', 'Skills'],
+  4: ['Mother', 'Property', 'Vehicles', 'Education', 'Comfort'],
+  5: ['Children', 'Intelligence', 'Romance', 'Speculation', 'Creativity'],
+  6: ['Enemies', 'Diseases', 'Debts', 'Service', 'Competition'],
+  7: ['Marriage', 'Partnership', 'Business', 'Public', 'Death (Maraka)'],
+  8: ['Longevity', 'Inheritance', 'Occult', 'Obstacles', 'Transformation'],
+  9: ['Fortune', 'Father', 'Higher Education', 'Long Travel', 'Dharma'],
+  10: ['Career', 'Fame', 'Authority', 'Government', 'Karma'],
+  11: ['Gains', 'Friends', 'Wishes Fulfilled', 'Elder Siblings', 'Income'],
+  12: ['Losses', 'Expenses', 'Foreign', 'Moksha', 'Hospital'],
+};
+---
+
+<Layout title="KP Significators - Detailed Analysis">
+  <Navigation currentPath="/significators" />
+
+  <main class="pt-20 min-h-screen bg-[--color-cream]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="font-heading text-3xl text-[--color-espresso] mb-2">KP Significators Analysis</h1>
+        <p class="text-[--color-text-secondary]">
+          Complete 4-fold significator analysis showing how each planet signifies houses through
+          ownership, occupation, star lordship, and sub lordship.
+        </p>
+      </div>
+
+      <!-- 4-Fold System Explanation -->
+      <div class="card p-6 mb-8 bg-gradient-to-r from-[--color-terracotta]/10 to-[--color-celestial-blue]/10">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">The 4-Fold Significator System (KP)</h2>
+        <div class="grid md:grid-cols-4 gap-4">
+          <div class="p-4 rounded-lg bg-white/70 border border-[--color-border]">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-[--color-terracotta] text-white text-xs flex items-center justify-center font-bold">1</span>
+              <span class="font-medium text-[--color-espresso]">Planet in House</span>
+            </div>
+            <p class="text-xs text-[--color-text-secondary]">
+              Planet occupying a house directly signifies that house (strongest influence).
+            </p>
+          </div>
+          <div class="p-4 rounded-lg bg-white/70 border border-[--color-border]">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-[--color-celestial-blue] text-white text-xs flex items-center justify-center font-bold">2</span>
+              <span class="font-medium text-[--color-espresso]">Star Lord's Houses</span>
+            </div>
+            <p class="text-xs text-[--color-text-secondary]">
+              Planet signifies houses owned by its star lord (Nakshatra lord).
+            </p>
+          </div>
+          <div class="p-4 rounded-lg bg-white/70 border border-[--color-border]">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-[--color-benefic] text-white text-xs flex items-center justify-center font-bold">3</span>
+              <span class="font-medium text-[--color-espresso]">Ownership</span>
+            </div>
+            <p class="text-xs text-[--color-text-secondary]">
+              Planet signifies houses it owns (rules) through sign placement.
+            </p>
+          </div>
+          <div class="p-4 rounded-lg bg-white/70 border border-[--color-border]">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-[--color-golden-hour] text-white text-xs flex items-center justify-center font-bold">4</span>
+              <span class="font-medium text-[--color-espresso]">Planets in Its Stars</span>
+            </div>
+            <p class="text-xs text-[--color-text-secondary]">
+              Planet signifies houses occupied by planets in its nakshatra.
+            </p>
+          </div>
+        </div>
+        <p class="mt-4 text-sm text-[--color-text-secondary] p-3 bg-[--color-linen] rounded-lg">
+          <strong>KP Priority:</strong> Occupant > Star Lord > Owner. The Sub Lord decides whether the promise will fructify.
+        </p>
+      </div>
+
+      <!-- Planet Significators Table -->
+      <div class="card overflow-hidden mb-8">
+        <div class="p-6 border-b border-[--color-border]">
+          <h2 class="font-heading text-xl text-[--color-espresso]">Planet-wise Significators</h2>
+          <p class="text-sm text-[--color-text-secondary] mt-1">Each planet's complete signification through the 4-fold system</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-[--color-linen]">
+              <tr>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Planet</th>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Occupies</th>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Owns</th>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Star Lord Of</th>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">In Star Of</th>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Sub Lord</th>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Total Signification</th>
+                <th class="px-4 py-3 text-left font-medium text-[--color-espresso]">Nature</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[--color-border]">
+              {planetSignificators.map((planet, index) => (
+                <tr class={index % 2 === 0 ? 'bg-white' : 'bg-[--color-pearl]'}>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xl" style={`color: ${planetColors[planet.planet]}`}>{planetSymbols[planet.planet]}</span>
+                      <div>
+                        <span class="font-medium text-[--color-espresso]">{planet.planet}</span>
+                        {planet.retrograde && <span class="text-[--color-malefic] text-xs ml-1">(R)</span>}
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class="house-badge">{planet.occupies.house}</span>
+                    <span class="text-xs text-[--color-text-muted] ml-1">{planet.occupies.sign}</span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex gap-1">
+                      {planet.owns.length > 0 ? planet.owns.map((h) => (
+                        <span class="house-badge">{h}</span>
+                      )) : <span class="text-[--color-text-muted]">-</span>}
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex gap-1 flex-wrap">
+                      {planet.starLordOf.map((h) => (
+                        <span class="house-badge bg-[--color-celestial-blue]/20 text-[--color-celestial-blue]">{h}</span>
+                      ))}
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span style={`color: ${planetColors[planet.positionedInStarOf]}`}>
+                      {planetSymbols[planet.positionedInStarOf]} {planet.positionedInStarOf}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class="font-medium text-[--color-terracotta]">{planet.subLord}</span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex gap-1 flex-wrap">
+                      {planet.totalSignification.map((h) => (
+                        <span class="house-badge bg-[--color-benefic]/20 text-[--color-benefic]">{h}</span>
+                      ))}
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class={`text-xs px-2 py-1 rounded-full ${planet.strength === 'Strong' || planet.strength === 'Exalted' ? 'bg-[--color-benefic]/20 text-[--color-benefic]' : 'bg-[--color-linen] text-[--color-text-muted]'}`}>
+                      {planet.strength}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- House Significators -->
+      <div class="card overflow-hidden mb-8">
+        <div class="p-6 border-b border-[--color-border]">
+          <h2 class="font-heading text-xl text-[--color-espresso]">House-wise Significators</h2>
+          <p class="text-sm text-[--color-text-secondary] mt-1">Planets that signify each house, ordered by strength</p>
+        </div>
+        <div class="p-6">
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {houseSignificators.map((house) => (
+              <div class="p-4 rounded-lg border border-[--color-border] bg-[--color-pearl]">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="house-badge bg-[--color-terracotta] text-white text-lg w-8 h-8 flex items-center justify-center">
+                      {house.house}
+                    </span>
+                    <div>
+                      <p class="font-medium text-[--color-espresso]">House {house.house}</p>
+                      <p class="text-xs text-[--color-text-muted]">{house.sign} • {house.cuspDegree}</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-xs text-[--color-text-muted]">Cusp Sub Lord</p>
+                    <p class="font-medium text-[--color-terracotta]">{house.cuspSubLord}</p>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <p class="text-xs text-[--color-text-muted] mb-1">Significators (by strength)</p>
+                  <div class="flex flex-wrap gap-1">
+                    {house.significators.map((planet, idx) => (
+                      <span
+                        class="px-2 py-1 rounded text-xs font-medium"
+                        style={`background-color: ${planetColors[planet]}15; color: ${planetColors[planet]}`}
+                      >
+                        {idx + 1}. {planetSymbols[planet]} {planet}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div class="pt-2 border-t border-[--color-border]">
+                  <p class="text-xs text-[--color-text-muted] mb-1">Signifies</p>
+                  <div class="flex flex-wrap gap-1">
+                    {houseMeanings[house.house as keyof typeof houseMeanings].slice(0, 3).map((meaning) => (
+                      <span class="text-xs px-2 py-0.5 bg-[--color-linen] rounded-full text-[--color-text-secondary]">
+                        {meaning}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <!-- Ruling Planets Section -->
+      <div class="card p-6 mb-8">
+        <h2 class="font-heading text-lg text-[--color-espresso] mb-4">Current Ruling Planets</h2>
+        <p class="text-sm text-[--color-text-secondary] mb-6">
+          Ruling planets at the current moment. Useful for Prashna (Horary) and timing analysis.
+        </p>
+
+        <div class="grid md:grid-cols-5 gap-4">
+          <div class="p-4 rounded-lg bg-[--color-linen] border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-2">Day Lord</p>
+            <span class="text-3xl block" style={`color: ${planetColors['Saturn']}`}>{planetSymbols['Saturn']}</span>
+            <p class="font-heading font-medium text-[--color-espresso] mt-2">Saturn</p>
+            <p class="text-xs text-[--color-text-muted]">Saturday</p>
+          </div>
+          <div class="p-4 rounded-lg bg-[--color-linen] border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-2">Moon Rasi Lord</p>
+            <span class="text-3xl block" style={`color: ${planetColors['Venus']}`}>{planetSymbols['Venus']}</span>
+            <p class="font-heading font-medium text-[--color-espresso] mt-2">Venus</p>
+            <p class="text-xs text-[--color-text-muted]">Taurus</p>
+          </div>
+          <div class="p-4 rounded-lg bg-[--color-linen] border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-2">Moon Star Lord</p>
+            <span class="text-3xl block" style={`color: ${planetColors['Moon']}`}>{planetSymbols['Moon']}</span>
+            <p class="font-heading font-medium text-[--color-espresso] mt-2">Moon</p>
+            <p class="text-xs text-[--color-text-muted]">Rohini</p>
+          </div>
+          <div class="p-4 rounded-lg bg-[--color-linen] border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-2">Lagna Rasi Lord</p>
+            <span class="text-3xl block" style={`color: ${planetColors['Mercury']}`}>{planetSymbols['Mercury']}</span>
+            <p class="font-heading font-medium text-[--color-espresso] mt-2">Mercury</p>
+            <p class="text-xs text-[--color-text-muted]">Gemini</p>
+          </div>
+          <div class="p-4 rounded-lg bg-[--color-linen] border border-[--color-border] text-center">
+            <p class="text-xs text-[--color-text-muted] mb-2">Lagna Star Lord</p>
+            <span class="text-3xl block" style={`color: ${planetColors['Rahu']}`}>{planetSymbols['Rahu']}</span>
+            <p class="font-heading font-medium text-[--color-espresso] mt-2">Rahu</p>
+            <p class="text-xs text-[--color-text-muted]">Ardra</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Significator Rules -->
+      <div class="p-6 rounded-lg bg-[--color-warm-sand] border border-[--color-border]">
+        <h3 class="font-heading text-lg text-[--color-espresso] mb-3">KP Significator Rules</h3>
+        <div class="grid md:grid-cols-2 gap-6 text-sm text-[--color-text-secondary]">
+          <div>
+            <h4 class="font-medium text-[--color-espresso] mb-2">Strength Order</h4>
+            <ol class="list-decimal pl-4 space-y-1">
+              <li>Planet occupying a house (strongest)</li>
+              <li>Planet in the star of occupant</li>
+              <li>Owner of the house</li>
+              <li>Planet in the star of owner (weakest)</li>
+            </ol>
+          </div>
+          <div>
+            <h4 class="font-medium text-[--color-espresso] mb-2">Event Manifestation</h4>
+            <ul class="space-y-1">
+              <li>• Sub Lord decides if event will happen</li>
+              <li>• Star Lord indicates the nature of result</li>
+              <li>• Sign Lord gives general direction</li>
+              <li>• Multiple significators strengthen prediction</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
