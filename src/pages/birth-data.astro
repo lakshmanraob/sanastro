@@ -161,6 +161,50 @@ const ayanamsaOptions = [
                 <p class="text-xs text-[--color-text-muted] mt-1">
                   Search for your birth place - coordinates and timezone will be auto-filled
                 </p>
+                <!-- Place Confirmation Card -->
+                <div id="place-confirmation" class="hidden mt-4 p-5 rounded-xl border-2 border-[--color-terracotta]/30 bg-[--color-terracotta]/5">
+                  <h3 class="font-heading text-base text-[--color-espresso] mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-[--color-terracotta]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Confirm Selected Place
+                  </h3>
+                  <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm mb-4">
+                    <div>
+                      <span class="text-[--color-text-muted]">Name:</span>
+                      <span id="confirm-name" class="font-medium text-[--color-espresso] ml-1"></span>
+                    </div>
+                    <div>
+                      <span class="text-[--color-text-muted]">County:</span>
+                      <span id="confirm-county" class="font-medium text-[--color-espresso] ml-1"></span>
+                    </div>
+                    <div>
+                      <span class="text-[--color-text-muted]">State:</span>
+                      <span id="confirm-state" class="font-medium text-[--color-espresso] ml-1"></span>
+                    </div>
+                    <div>
+                      <span class="text-[--color-text-muted]">Country:</span>
+                      <span id="confirm-country" class="font-medium text-[--color-espresso] ml-1"></span>
+                    </div>
+                    <div>
+                      <span class="text-[--color-text-muted]">Latitude:</span>
+                      <span id="confirm-lat" class="font-medium text-[--color-espresso] ml-1"></span>
+                    </div>
+                    <div>
+                      <span class="text-[--color-text-muted]">Longitude:</span>
+                      <span id="confirm-lng" class="font-medium text-[--color-espresso] ml-1"></span>
+                    </div>
+                  </div>
+                  <div class="flex gap-3">
+                    <button type="button" id="confirm-place-btn" class="btn btn-primary text-sm py-2 px-4">
+                      Confirm Place
+                    </button>
+                    <button type="button" id="search-again-btn" class="btn btn-secondary text-sm py-2 px-4">
+                      Search Again
+                    </button>
+                  </div>
+                </div>
               </div>
               <div>
                 <label for="latitude" class="label">Latitude</label>
@@ -194,12 +238,14 @@ const ayanamsaOptions = [
                   type="number"
                   id="timezone"
                   name="timezone"
-                  class="input bg-[--color-linen]"
-                  placeholder="Auto-filled from place search"
+                  class="input"
+                  placeholder="Auto-estimated, verify if needed"
                   step="0.5"
-                  readonly
                   required
                 />
+                <p class="text-xs text-[--color-text-muted] mt-1">
+                  Timezone is estimated from location. Please verify and adjust if needed.
+                </p>
               </div>
             </div>
           </div>
@@ -283,30 +329,39 @@ const ayanamsaOptions = [
 </Layout>
 
 <script>
-  // Google Places Autocomplete integration
+  // Photon Places API integration (photon.komoot.io)
   const birthPlaceInput = document.getElementById('birthPlace') as HTMLInputElement;
   const suggestionsContainer = document.getElementById('place-suggestions');
   const loadingIndicator = document.getElementById('place-loading');
   const latitudeInput = document.getElementById('latitude') as HTMLInputElement;
   const longitudeInput = document.getElementById('longitude') as HTMLInputElement;
   const timezoneInput = document.getElementById('timezone') as HTMLInputElement;
+  const confirmationPanel = document.getElementById('place-confirmation');
+  const confirmNameEl = document.getElementById('confirm-name');
+  const confirmCountyEl = document.getElementById('confirm-county');
+  const confirmStateEl = document.getElementById('confirm-state');
+  const confirmCountryEl = document.getElementById('confirm-country');
+  const confirmLatEl = document.getElementById('confirm-lat');
+  const confirmLngEl = document.getElementById('confirm-lng');
+  const confirmPlaceBtn = document.getElementById('confirm-place-btn');
+  const searchAgainBtn = document.getElementById('search-again-btn');
 
   let debounceTimer: ReturnType<typeof setTimeout>;
-  let sessionToken: string = '';
+  let selectedPlace: any = null;
+  let currentResults: any[] = [];
 
-  // Generate a session token for Places API
-  function generateSessionToken(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
+  interface PlaceResult {
+    name: string;
+    city: string;
+    county: string;
+    state: string;
+    country: string;
+    type: string;
+    latitude: number;
+    longitude: number;
   }
 
-  // Initialize session token
-  sessionToken = generateSessionToken();
-
-  // Fetch place suggestions from Google Places API
+  // Fetch place suggestions from Photon API
   async function fetchPlaceSuggestions(query: string): Promise<void> {
     if (query.length < 3) {
       suggestionsContainer?.classList.add('hidden');
@@ -316,11 +371,12 @@ const ayanamsaOptions = [
     loadingIndicator?.classList.remove('hidden');
 
     try {
-      const response = await fetch(`/api/places/autocomplete?input=${encodeURIComponent(query)}&sessionToken=${sessionToken}`);
+      const response = await fetch(`/api/places/autocomplete?input=${encodeURIComponent(query)}`);
       const data = await response.json();
 
-      if (data.predictions && data.predictions.length > 0) {
-        renderSuggestions(data.predictions);
+      if (data.results && data.results.length > 0) {
+        currentResults = data.results;
+        renderSuggestions(data.results);
       } else {
         suggestionsContainer?.classList.add('hidden');
       }
@@ -332,16 +388,20 @@ const ayanamsaOptions = [
     }
   }
 
-  // Render suggestions in dropdown
-  function renderSuggestions(predictions: Array<{ place_id: string; description: string; structured_formatting?: { main_text: string; secondary_text: string } }>): void {
+  // Render suggestions in dropdown with place details
+  function renderSuggestions(results: PlaceResult[]): void {
     if (!suggestionsContainer) return;
 
-    suggestionsContainer.innerHTML = predictions.map((prediction) => `
-      <div class="place-suggestion px-4 py-3 cursor-pointer hover:bg-[--color-linen] border-b border-[--color-border] last:border-0 transition-colors" data-place-id="${prediction.place_id}">
-        <p class="font-medium text-[--color-espresso] text-sm">${prediction.structured_formatting?.main_text || prediction.description}</p>
-        ${prediction.structured_formatting?.secondary_text ? `<p class="text-xs text-[--color-text-muted]">${prediction.structured_formatting.secondary_text}</p>` : ''}
-      </div>
-    `).join('');
+    suggestionsContainer.innerHTML = results.map((place, index) => {
+      const displayName = place.name || place.city || 'Unknown';
+      const details = [place.county, place.state, place.country].filter(Boolean).join(', ');
+      return `
+        <div class="place-suggestion px-4 py-3 cursor-pointer hover:bg-[--color-linen] border-b border-[--color-border] last:border-0 transition-colors" data-index="${index}">
+          <p class="font-medium text-[--color-espresso] text-sm">${displayName}</p>
+          ${details ? `<p class="text-xs text-[--color-text-muted]">${details}</p>` : ''}
+        </div>
+      `;
+    }).join('');
 
     suggestionsContainer.classList.remove('hidden');
 
@@ -349,50 +409,69 @@ const ayanamsaOptions = [
     const suggestionElements = suggestionsContainer.querySelectorAll('.place-suggestion');
     suggestionElements.forEach((el) => {
       el.addEventListener('click', () => {
-        const placeId = el.getAttribute('data-place-id');
-        if (placeId) {
-          selectPlace(placeId, el.querySelector('p')?.textContent || '');
-        }
+        const index = parseInt(el.getAttribute('data-index') || '0');
+        showPlaceConfirmation(currentResults[index]);
       });
     });
   }
 
-  // Select a place and fetch its details
-  async function selectPlace(placeId: string, placeName: string): Promise<void> {
-    birthPlaceInput.value = placeName;
+  // Show confirmation panel with place details for user verification
+  function showPlaceConfirmation(place: PlaceResult): void {
+    selectedPlace = place;
     suggestionsContainer?.classList.add('hidden');
-    loadingIndicator?.classList.remove('hidden');
 
-    try {
-      const response = await fetch(`/api/places/details?placeId=${placeId}&sessionToken=${sessionToken}`);
-      const data = await response.json();
+    const displayName = place.name || place.city || '-';
+    if (confirmNameEl) confirmNameEl.textContent = displayName;
+    if (confirmCountyEl) confirmCountyEl.textContent = place.county || '-';
+    if (confirmStateEl) confirmStateEl.textContent = place.state || '-';
+    if (confirmCountryEl) confirmCountryEl.textContent = place.country || '-';
+    if (confirmLatEl) confirmLatEl.textContent = place.latitude.toFixed(4);
+    if (confirmLngEl) confirmLngEl.textContent = place.longitude.toFixed(4);
 
-      if (data.result) {
-        const { geometry, utc_offset } = data.result;
-
-        if (geometry?.location) {
-          latitudeInput.value = geometry.location.lat.toFixed(4);
-          longitudeInput.value = geometry.location.lng.toFixed(4);
-        }
-
-        // Convert UTC offset from minutes to hours
-        if (utc_offset !== undefined) {
-          timezoneInput.value = (utc_offset / 60).toString();
-        }
-
-        // Generate new session token for next search
-        sessionToken = generateSessionToken();
-      }
-    } catch (error) {
-      console.error('Error fetching place details:', error);
-    } finally {
-      loadingIndicator?.classList.add('hidden');
-    }
+    birthPlaceInput.value = displayName;
+    confirmationPanel?.classList.remove('hidden');
   }
+
+  // Confirm place selection - populate form fields
+  function confirmPlace(): void {
+    if (!selectedPlace) return;
+
+    latitudeInput.value = selectedPlace.latitude.toFixed(4);
+    longitudeInput.value = selectedPlace.longitude.toFixed(4);
+
+    // Estimate timezone from longitude (nearest 0.5 hour)
+    const estimatedTz = Math.round(selectedPlace.longitude / 15 * 2) / 2;
+    timezoneInput.value = estimatedTz.toString();
+
+    // Set display name with full location path
+    const parts = [selectedPlace.name || selectedPlace.city, selectedPlace.state, selectedPlace.country].filter(Boolean);
+    birthPlaceInput.value = parts.join(', ');
+
+    confirmationPanel?.classList.add('hidden');
+  }
+
+  // Search again - clear selection and reset fields
+  function searchAgain(): void {
+    confirmationPanel?.classList.add('hidden');
+    selectedPlace = null;
+    birthPlaceInput.value = '';
+    latitudeInput.value = '';
+    longitudeInput.value = '';
+    timezoneInput.value = '';
+    birthPlaceInput.focus();
+  }
+
+  // Confirmation button handlers
+  confirmPlaceBtn?.addEventListener('click', confirmPlace);
+  searchAgainBtn?.addEventListener('click', searchAgain);
 
   // Debounced input handler
   birthPlaceInput?.addEventListener('input', (e) => {
     const query = (e.target as HTMLInputElement).value;
+
+    // Hide confirmation if user starts typing again
+    confirmationPanel?.classList.add('hidden');
+    selectedPlace = null;
 
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
@@ -424,7 +503,7 @@ const ayanamsaOptions = [
     const formData = new FormData(form as HTMLFormElement);
     const data = Object.fromEntries(formData.entries());
 
-    // Store in localStorage for demo
+    // Store in localStorage
     localStorage.setItem('birthData', JSON.stringify(data));
 
     // Redirect to chart page
